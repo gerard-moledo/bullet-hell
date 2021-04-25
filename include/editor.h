@@ -1,3 +1,6 @@
+#ifndef EDITOR_H
+#define EDITOR_H
+
 #include "util.h"
 
 #include "SDL.h"
@@ -29,3 +32,5 @@ void Editor_Delete_Enemy();
 void Editor_Render();
 void Editor_Render_Path();
 void Editor_Render_Edit();
+
+#endif

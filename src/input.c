@@ -2,9 +2,7 @@
 
 #include "SDL.h"
 
-#include "util.h"
-#include "game.h"
-#include "renderer.h"
+#include "globals.h"
 
 Input input = { 0 };
 

@@ -4,10 +4,7 @@
 
 #include "SDL.h"
 
-#include "util.h"
-#include "game.h"
-#include "renderer.h"
-#include "world.h"
+#include "globals.h"
 
 void Bullet_Create(Vector position, Vector velocity, Team team)
 {

@@ -5,12 +5,7 @@
 #include "SDL.h"
 #include "SDL_timer.h"
 
-#include "util.h"
-#include "game.h"
-#include "renderer.h"
-#include "input.h"
-#include "world.h"
-#include "bullet.h"
+#include "globals.h"
 
 void Player_Initialize()
 {

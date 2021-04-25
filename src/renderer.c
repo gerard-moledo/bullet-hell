@@ -2,9 +2,7 @@
 
 #include <stdio.h>
 
-#include "game.h"
-#include "world.h"
-#include "editor.h"
+#include "globals.h"
 
 Renderer renderer = { NULL };
 

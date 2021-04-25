@@ -3,11 +3,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "util.h"
-#include "renderer.h"
-#include "input.h"
-#include "world.h"
-#include "editor.h"
+#include "globals.h"
 
 Game game = {NULL};
 

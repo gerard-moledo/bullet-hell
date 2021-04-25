@@ -2,7 +2,7 @@
 
 #include "SDL.h"
 
-#include "game.h"
+#include "globals.h"
 
 int main(int argc, char* argv[])
 {

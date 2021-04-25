@@ -4,8 +4,6 @@
 #include <math.h>
 #include <string.h>
 
-#include "world.h"
-
 Path Path_Initialize(int waypointCount, Vector waypoints[], double durations[])
 {
     Path path;

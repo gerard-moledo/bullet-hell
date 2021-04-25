@@ -3,11 +3,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "game.h"
-#include "renderer.h"
-#include "world.h"
-#include "input.h"
-#include "enemy.h"
+#include "globals.h"
 
 Editor editor = {0};
 

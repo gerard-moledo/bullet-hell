@@ -4,14 +4,7 @@
 
 #include "SDL.h"
 
-#include "util.h"
-#include "game.h"
-#include "renderer.h"
-#include "input.h"
-#include "editor.h"
-#include "player.h"
-#include "enemy.h"
-#include "bullet.h"
+#include "globals.h"
 
 World world = {0};
 
