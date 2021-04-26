@@ -1,7 +1,5 @@
 #include "input.h"
 
-#include "SDL.h"
-
 #include "globals.h"
 
 Input input = { 0 };

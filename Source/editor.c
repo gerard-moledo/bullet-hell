@@ -69,7 +69,6 @@ void Editor_Update(double dt)
     // DRAG POINT
     if (input.leftMouseDown)
     {
-        printf("%d\n\n", editor.activeEnemy);
         if (editor.pointToEdit >= 0 && input.shiftHeld)
         {
             Editor_Drag_Enemy(mouseGamePos, mousePos);
@@ -377,7 +376,7 @@ void Editor_Render_Edit()
 
         for (int segment = 0; segment < 40; segment++)
         {
-            double angle = segment / 40. * 2 * PI;
+            double angle = segment / 40. * 2 * M_PI;
             double pointX = point.x + 50 / renderer.zoom * cos(angle);
             double pointY = point.y + 50 / renderer.zoom * sin(angle);
 

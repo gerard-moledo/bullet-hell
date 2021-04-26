@@ -1,1 +1,4 @@
 builds
+*.html
+*.js
+*.wasm

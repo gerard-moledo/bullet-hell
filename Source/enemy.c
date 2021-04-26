@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "SDL.h"
-
 #include "globals.h"
 
 int Enemy_Initialize(Path route)
@@ -14,6 +12,7 @@ int Enemy_Initialize(Path route)
     enemy.position = route.waypoints[0];
 
     enemy.fire = true;
+    enemy.fireTimer = 0;
 
     enemy.body.position = enemy.position;
     enemy.body.radius = 10;
@@ -47,6 +46,7 @@ int Enemy_Initialize(Path route)
 
 void Enemy_Update(Enemy* enemy, double dt)
 {
+
     if (enemy->route.waypointCount <= 0)
     {
         Enemy_Destroy(enemy);
@@ -63,21 +63,26 @@ void Enemy_Update(Enemy* enemy, double dt)
             enemy->t = 0;
             return;
         }
-
-        if (true)//enemy->fire)
+        
+        if (!enemy->fire)
+        {
+            enemy->fireTimer += dt;
+            enemy->fire = enemy->fireTimer > 0.2;
+        }
+        if (enemy->fire)
         {
             Vector velocity;
-            for (int shot = 0; shot < 1000; shot++)
+            for (int shot = 0; shot < 50; shot++)
             {
-                double angle = shot / 1000. * 2 * PI;
-                velocity.x = cos(angle) * 200;
-                velocity.y = sin(angle) * 200;
+                double angle = shot / 50. * 2 * M_PI;
+                velocity.x = cos(angle) * 100;
+                velocity.y = sin(angle) * 100;
 
                 Bullet_Create(enemy->position, velocity, team_enemy);
             }
 
             enemy->fire = false;
-            //enemy->fireTimer = SDL_AddTimer(100, Enemy_Reload, enemy);
+            enemy->fireTimer = 0;
         }
     }
 
@@ -157,7 +162,7 @@ void Enemy_Render(Enemy* enemy)
     SDL_SetRenderDrawColor(game.renderer, 255, 0, 0, 255);
     for (int segment = 0; segment < 40; segment++)
     {
-        double angle = segment / 40. * 2 * PI;
+        double angle = segment / 40. * 2 * M_PI;
         double pointX = enemy->position.x + enemy->body.radius * cos(angle);
         double pointY = enemy->position.y + enemy->body.radius * sin(angle);
 

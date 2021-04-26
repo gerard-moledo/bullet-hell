@@ -32,7 +32,9 @@ void Renderer_Reset_Camera()
 
 void Renderer_Draw_Point(int x, int y)
 {
-    Vector gamePoint = { x, y };
+    Vector gamePoint; 
+    gamePoint.x = x;
+    gamePoint.y = y;
     VectorInt renderPoint = Renderer_Game_To_Screen_Transform(gamePoint, true);
 
     SDL_RenderDrawPoint(game.renderer, renderPoint.x, renderPoint.y);
@@ -89,13 +91,21 @@ void Renderer_Batch()
     for (int id = 0; id < world.playerBulletsCount; id++)
     {
         VectorInt renderPoint = Renderer_Game_To_Screen_Transform(world.playerBullets[id].position, true);
-        SDL_Rect renderRect = { renderPoint.x, renderPoint.y, 2, 2 };
+        SDL_Rect renderRect;
+        renderRect.x = renderPoint.x;
+        renderRect.y = renderPoint.y;
+        renderRect.w = 2;
+        renderRect.h = 2;
         renderer.bulletPlayerBatch[id] = renderRect;
     }
     for (int id = 0; id < world.enemyBulletsCount; id++)
     {
         VectorInt renderPoint = Renderer_Game_To_Screen_Transform(world.enemyBullets[id].position, true);
-        SDL_Rect renderRect = { renderPoint.x, renderPoint.y, 2, 2 };
+        SDL_Rect renderRect;
+        renderRect.x = renderPoint.x;
+        renderRect.y = renderPoint.y;
+        renderRect.w = 2;
+        renderRect.h = 2;
         renderer.bulletEnemyBatch[id] = renderRect;
     }
 }
@@ -125,9 +135,17 @@ void Renderer_Render()
 
 
     // Render to screen
-    SDL_Rect gameRect = { renderer.renderCenter.x - renderer.cameraPosition.x, renderer.renderCenter.y - renderer.cameraPosition.y, renderer.renderWindowSize.x, renderer.renderWindowSize.y };
-    // (800, 800) -> 200, (800, 600) -> 100, (800, 400) -> 0
-    SDL_Rect screenRect = { (WINDOW_WIDTH - renderer.renderWindowSize.x) / 2, (WINDOW_HEIGHT - renderer.renderWindowSize.y) / 2, renderer.renderWindowSize.x, renderer.renderWindowSize.y };
+    SDL_Rect gameRect;
+    gameRect.x = renderer.renderCenter.x - renderer.cameraPosition.x;
+    gameRect.y = renderer.renderCenter.y - renderer.cameraPosition.y;
+    gameRect.w = renderer.renderWindowSize.x;
+    gameRect.h = renderer.renderWindowSize.y;
+
+    SDL_Rect screenRect;
+    screenRect.x = (WINDOW_WIDTH - renderer.renderWindowSize.x) / 2;
+    screenRect.y = (WINDOW_HEIGHT - renderer.renderWindowSize.y) / 2;
+    screenRect.w = renderer.renderWindowSize.x;
+    screenRect.h = renderer.renderWindowSize.y;
     SDL_RenderCopy(game.renderer, renderer.renderTexture, &gameRect, &screenRect);
 
 
@@ -150,9 +168,14 @@ Vector Renderer_Screen_To_Game_Transform(VectorInt screenPoint, bool isRender)
 
 SDL_Point Renderer_Screen_To_Game_Transform_SDLPoint(SDL_Point renderPoint, bool isRender)
 {
-    VectorInt screenPoint = { renderPoint.x, renderPoint.y };
+    VectorInt screenPoint;
+    screenPoint.x = renderPoint.x;
+    screenPoint.y = renderPoint.y;
+
     Vector gamePosition = Renderer_Screen_To_Game_Transform(screenPoint, isRender);
-    SDL_Point gamePoint = { Round_To_Int(gamePosition.x), Round_To_Int(gamePosition.y) };
+    SDL_Point gamePoint;
+    gamePoint.x = Round_To_Int(gamePosition.x);
+    gamePoint.y = Round_To_Int(gamePosition.y);
 
     return gamePoint;
 }
@@ -172,7 +195,9 @@ VectorInt Renderer_Game_To_Screen_Transform(Vector gamePosition, bool isRender)
 
 VectorInt Renderer_Game_To_Screen_Transform_SDLPoint(SDL_Point renderPoint, bool isRender)
 {
-    Vector gamePosition = { (double) renderPoint.x, (double) renderPoint.y };
+    Vector gamePosition;
+    gamePosition.x = (double) renderPoint.x;
+    gamePosition.y = (double) renderPoint.y;
 
     return Renderer_Game_To_Screen_Transform(gamePosition, isRender);
 }

@@ -15,7 +15,6 @@ typedef struct {
     BodyCircle body;
 
     Vector model[5];
-    SDL_Point render[5];
 } Bullet;
 
 void Bullet_Create(Vector position, Vector velocity, Team team);

@@ -2,8 +2,6 @@
 
 #include <math.h>
 
-#include "SDL.h"
-
 #include "globals.h"
 
 void Bullet_Create(Vector position, Vector velocity, Team team)
@@ -13,13 +11,13 @@ void Bullet_Create(Vector position, Vector velocity, Team team)
     if (team == team_enemy && world.enemyBulletsCount >= WORLD_MAX_ENEMY_BULLETS)
         return;
 
-    Bullet bullet = {
-        0,
-        team,
-        position,
-        velocity,
-        {position, 2}
-    };
+    Bullet bullet;
+    bullet.id = 0;
+    bullet.team = team;
+    bullet.position = position;
+    bullet.velocity = velocity;
+    bullet.body.position = position;
+    bullet.body.radius = 2;
 
     Vector model[5] = {
         {0, -2},

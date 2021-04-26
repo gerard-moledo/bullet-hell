@@ -2,8 +2,6 @@
 
 #include <stdio.h>
 
-#include "SDL.h"
-
 #include "globals.h"
 
 World world = {0};

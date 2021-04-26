@@ -2,7 +2,6 @@
 
 #include <math.h>
 
-#include "SDL.h"
 #include "SDL_timer.h"
 
 #include "globals.h"
@@ -15,7 +14,7 @@ void Player_Initialize()
     player.position.x = 0;
     player.position.y = 0;
 
-    player.speed = 200;
+    player.speed = 150;
     player.velocity.x = 0;
     player.velocity.y = 0;
 
@@ -47,7 +46,7 @@ void Player_Update(Player* player, double dt)
     if (input.left) player->velocity.x = -player->speed;
     if (input.right) player->velocity.x = player->speed;
 
-    player->speedModifier = input.toggleCreep ? 0.25 : 1;
+    player->speedModifier = input.toggleCreep ? 0.35 : 1;
 
     player->position.x += player->velocity.x * player->speedModifier * dt;
     player->position.y += player->velocity.y * player->speedModifier * dt;
@@ -83,7 +82,7 @@ void Player_Render(Player* player)
     SDL_SetRenderDrawColor(game.renderer, 255, 0, 0, 255);
     for (int segment = 0; segment < 40; segment++)
     {
-        double angle = segment / 40. * 2 * PI;
+        double angle = segment / 40. * 2 * M_PI;
         double pointX = player->position.x + player->body.radius * cos(angle);
         double pointY = player->position.y + player->body.radius * sin(angle);
 

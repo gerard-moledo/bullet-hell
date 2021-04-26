@@ -13,19 +13,17 @@ project "Bullet_Hell"
    language "C"
    targetdir "%{prj.location}/%{cfg.buildcfg}_%{cfg.platform}"
 
-   files { "Include/*.h", "src/*.c" }
+   files { "./Include/*.h", "./Source/*.c" }
 
-   links { "SDL2", "SDL2main" }
+   links { "SDL2main", "SDL2", "SDL2_gpu_s" }
 
-   includedirs{ "./Include" }
+   includedirs { "./Include" }
 
-   filter "action:codeblocks"
-      includedirs { "../../_Dev_Libs/SDL_mingw32/include/SDL2" }
-
-      linkoptions {  "-lmingw32", "-lSDL2main", "-lSDL2", "-pg" }
+   defines { "GPU_USE_INT_BOOL" }
 
    filter "action:vs2019"
-      includedirs { "../../_Dev_Libs/SDL2_Windows/*/include" }
+      includedirs { "../../_Dev_Libs/SDL2_Windows/*/Include" }
+      buildoptions { "/TC", "/Za" }
 
    filter "configurations:Debug"
       defines { "DEBUG" }
@@ -39,9 +37,6 @@ project "Bullet_Hell"
       architecture "x32"
       system "windows"
 
-      if _ACTION == "codeblocks" then
-         libdirs { "../../_Dev_Libs/SDL_mingw32/lib" }
-      end
       if _ACTION == "vs2019" then
          libdirs { "../../_Dev_Libs/SDL2_Windows/*/x86" }
       end
@@ -50,10 +45,7 @@ project "Bullet_Hell"
       architecture "x86_64"
       system "windows"
       
-      if _ACTION == "codeblocks" then
-         libdirs { "../../_Dev_Libs/SDL_x64_mingw32/lib" }
-      end
-      if _ACTION == "vs2019" or _ACTION == "vs2017" then
+      if _ACTION == "vs2019" then
          libdirs { "../../_Dev_Libs/SDL2_Windows/*/x64" }
       end
 

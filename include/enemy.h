@@ -1,6 +1,8 @@
 #ifndef ENEMY_H
 #define ENEMY_H
 
+#include <time.h>
+
 #include "SDL.h"
 
 #include "util.h"
@@ -14,7 +16,7 @@ typedef struct {
     double speed;
 
     bool fire;
-    SDL_TimerID fireTimer;
+    double fireTimer;
 
     BodyCircle body;
 

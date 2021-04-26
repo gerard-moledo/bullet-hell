@@ -213,7 +213,6 @@ Vector Follow_Curve_Constant(Path path, double t, bool dragging)
 
         if (count >= 10)
         {
-            printf("pathLength: %f\narcLength: %f\n\n\n", pathLength, arcLength);
             if (count >= 100)
             {
                 tLast = (tLast + tMapped) / 2;
