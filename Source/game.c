@@ -53,7 +53,7 @@ void Game_Run_Emscripten()
 void Game_Loop()
 {
     clock_t currentTime = clock();
-    double elapsedTime = ((double) currentTime - (double) game.previousFrameTime) / CLOCKS_PER_SEC;
+    float elapsedTime = (float) (currentTime -  game.previousFrameTime) / CLOCKS_PER_SEC;
     game.previousFrameTime = currentTime;
 
 #ifndef __EMSCRIPTEN__

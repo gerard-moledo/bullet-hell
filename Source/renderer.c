@@ -33,14 +33,14 @@ void Renderer_Reset_Camera()
 // Draw Routines
 // ====================
 
-void Renderer_Draw_Point(GPU_Target* target, double x, double y, SDL_Color color)
+void Renderer_Draw_Point(GPU_Target* target, float x, float y, SDL_Color color)
 {
     Vector gamePoint; 
     gamePoint.x = x;
     gamePoint.y = y;
     Vector renderPoint = Renderer_Game_To_Screen_TransformV(gamePoint, true);
 
-    GPU_Pixel(target, (float) renderPoint.x, (float) renderPoint.y, color);
+    GPU_Pixel(target,  renderPoint.x,  renderPoint.y, color);
 }
 
 void Renderer_Draw_Points(GPU_Target* target, Vector points[], int pointCount, SDL_Color color)
@@ -49,7 +49,7 @@ void Renderer_Draw_Points(GPU_Target* target, Vector points[], int pointCount, S
     {
         Vector renderPoint = Renderer_Game_To_Screen_TransformV(points[point], true);
 
-        GPU_Pixel(target, (float) renderPoint.x, (float) renderPoint.y, color);
+        GPU_Pixel(target,  renderPoint.x,  renderPoint.y, color);
     }
 }
 
@@ -58,8 +58,8 @@ void Renderer_Draw_Lines(GPU_Target* target, float points[], int pointCount, SDL
     for (int point = 0; point < pointCount; point += 2)
     {
         Vector renderPoint = Renderer_Game_To_Screen_TransformF(points[point], points[point + 1], true);
-        points[point] = (float)renderPoint.x;
-        points[point + 1] = (float)renderPoint.y;
+        points[point] = renderPoint.x;
+        points[point + 1] = renderPoint.y;
     }
 
     GPU_Polygon(target, pointCount / 2, points, color);
@@ -96,22 +96,18 @@ void Renderer_Render()
         Editor_Render(renderer.renderImage->target);
     }
 
-
-
-
-
     GPU_ClearRGB(game.gpu_target, 150, 150, 150);
 
     // Render to screen
     GPU_Rect gameRect;
-    gameRect.x = (float) (renderer.renderCenter.x - renderer.cameraPosition.x);
-    gameRect.y = (float) (renderer.renderCenter.y - renderer.cameraPosition.y);
-    gameRect.w = (float) renderer.renderWindowSize.x;
-    gameRect.h = (float) renderer.renderWindowSize.y;
+    gameRect.x =  (float) (renderer.renderCenter.x - renderer.cameraPosition.x);
+    gameRect.y =  (float) (renderer.renderCenter.y - renderer.cameraPosition.y);
+    gameRect.w =  (float) renderer.renderWindowSize.x;
+    gameRect.h =  (float) renderer.renderWindowSize.y;
 
     Vector screenPosition;
-    screenPosition.x = (float) ((WINDOW_WIDTH - renderer.renderWindowSize.x) / 2.);
-    screenPosition.y = (float) ((WINDOW_HEIGHT - renderer.renderWindowSize.y) / 2.);
+    screenPosition.x =  ((WINDOW_WIDTH - renderer.renderWindowSize.x) / 2.f);
+    screenPosition.y =  ((WINDOW_HEIGHT - renderer.renderWindowSize.y) / 2.f);
 
     GPU_Rect renderRect = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
     GPU_Blit(renderer.renderImage, &gameRect, game.gpu_target, screenPosition.x, screenPosition.y);
@@ -125,17 +121,17 @@ void Renderer_Render()
 // Conversion Functions
 // =======================
 
-Vector Renderer_Screen_To_Game_TransformF(double screenX, double screenY, bool isRender)
+Vector Renderer_Screen_To_Game_TransformF(float screenX, float screenY, bool isRender)
 {
     Vector origin = isRender ? renderer.renderCenter : renderer.cameraPosition;
 
     Vector gamePosition;
-    gamePosition.x = (double)(screenX - origin.x - renderer.renderWindowSize.x / 2) / renderer.zoom;
-    gamePosition.y = (double)(screenY - origin.y - renderer.renderWindowSize.y / 2) / renderer.zoom;
+    gamePosition.x = (screenX - origin.x - renderer.renderWindowSize.x / 2) / renderer.zoom;
+    gamePosition.y = (screenY - origin.y - renderer.renderWindowSize.y / 2) / renderer.zoom;
     return gamePosition;
 }
 
-Vector Renderer_Game_To_Screen_TransformF(double gameX, double gameY, bool isRender)
+Vector Renderer_Game_To_Screen_TransformF(float gameX, float gameY, bool isRender)
 {
     Vector origin = isRender ? renderer.renderCenter : renderer.cameraPosition;
 
@@ -151,8 +147,8 @@ Vector Renderer_Screen_To_Game_TransformV(Vector screenPoint, bool isRender)
     Vector origin = isRender ? renderer.renderCenter : renderer.cameraPosition;
 
     Vector gamePosition;
-    gamePosition.x = (double) (screenPoint.x - origin.x - renderer.renderWindowSize.x / 2) / renderer.zoom;
-    gamePosition.y = (double) (screenPoint.y - origin.y - renderer.renderWindowSize.y / 2) / renderer.zoom;
+    gamePosition.x =  (screenPoint.x - origin.x - renderer.renderWindowSize.x / 2) / renderer.zoom;
+    gamePosition.y =  (screenPoint.y - origin.y - renderer.renderWindowSize.y / 2) / renderer.zoom;
     return gamePosition;
 }
 

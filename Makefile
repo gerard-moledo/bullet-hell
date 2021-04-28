@@ -1,5 +1,5 @@
 #OBJS specifies which files to compile as part of the project
-OBJS := $(patsubst %.c, %.o, $(wildcard ./Source/*.c))
+OBJS := $(patsubst ./Source/%.c, ./obj/%.o, $(wildcard ./Source/*.c))
 
 INCLUDES = -I../../_Dev_Libs/Emscripten -I./Include $(patsubst %, -I%, $(wildcard ../../_Dev_Libs/SDL2_Emscripten/*/Include))
 
@@ -22,5 +22,5 @@ OBJ_NAME = Bullet_Hell.html
 all : $(OBJS)
 	$(CC) $(OBJS) $(LIBS) $(LINKER_FLAGS) -o $(OBJ_NAME)
 
-./Source/%.o : ./Source/%.c ./Include/globals.h
+./obj/%.o : ./Source/%.c ./Include/globals.h
 	$(CC) $< $(COMPILER_FLAGS) -c -o $@

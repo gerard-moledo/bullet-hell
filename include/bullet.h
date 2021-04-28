@@ -13,15 +13,15 @@ typedef struct {
 
     Vector position;
     Vector velocity;
-    double radius;
+    float radius;
 
     BodyCircle body;
 
     Vector model[5];
 } Bullet;
 
-void Bullet_Create(Vector position, Vector velocity, double radius, double bodyRadius, Team team);
-void Bullet_Update(Bullet* bullet, double dt);
+void Bullet_Create(Vector position, Vector velocity, float radius, float bodyRadius, Team team);
+void Bullet_Update(Bullet* bullet, float dt);
 void Bullet_Render(GPU_Target* target, Bullet* bullet);
 
 #endif

@@ -44,7 +44,7 @@ int Enemy_Initialize(Path route)
     return enemy.id;
 }
 
-void Enemy_Update(Enemy* enemy, double dt)
+void Enemy_Update(Enemy* enemy, float dt)
 {
 
     if (enemy->route.waypointCount <= 0)
@@ -74,9 +74,9 @@ void Enemy_Update(Enemy* enemy, double dt)
             Vector velocity;
             for (int shot = 0; shot < 30; shot++)
             {
-                double angle = shot / 30. * 2 * M_PI;
-                velocity.x = cos(angle) * 70;
-                velocity.y = sin(angle) * 70;
+                float angle = shot / 30.f * 2 * F_PI;
+                velocity.x = cosf(angle) * 70;
+                velocity.y = sinf(angle) * 70;
 
                 Bullet_Create(enemy->position, velocity, 6, 2, team_enemy);
             }
@@ -90,7 +90,7 @@ void Enemy_Update(Enemy* enemy, double dt)
     {
         if (enemy->edit)
         {
-            enemy->t += (double)input.scroll / 100;
+            enemy->t += input.scroll / 100;
         }
 
         if (enemy->t < 0)
@@ -99,7 +99,7 @@ void Enemy_Update(Enemy* enemy, double dt)
         }
         if (enemy->t > enemy->route.waypointCount - 3)
         {
-            enemy->t = enemy->route.waypointCount - 3;
+            enemy->t = (float) (enemy->route.waypointCount - 3);
         }
     }
 
@@ -109,8 +109,8 @@ void Enemy_Update(Enemy* enemy, double dt)
 
     for (int point = 0; point < ENEMY_MODEL_COUNT; point++)
     {
-        enemy->render[point * 2] = (float) (enemy->position.x + enemy->model[point].x);
-        enemy->render[point * 2 + 1] = (float) (enemy->position.y + enemy->model[point].y);
+        enemy->render[point * 2] =  (enemy->position.x + enemy->model[point].x);
+        enemy->render[point * 2 + 1] =  (enemy->position.y + enemy->model[point].y);
     }
 
     enemy->body.position = enemy->position;
@@ -146,9 +146,9 @@ void Enemy_Render(GPU_Target* target, Enemy* enemy)
     color = red;
     for (int segment = 0; segment < 40; segment++)
     {
-        double angle = segment / 40. * 2 * M_PI;
-        double pointX = enemy->position.x + enemy->body.radius * cos(angle);
-        double pointY = enemy->position.y + enemy->body.radius * sin(angle);
+        float angle = segment / 40.f * 2 * F_PI;
+        float pointX = enemy->position.x + enemy->body.radius * cosf(angle);
+        float pointY = enemy->position.y + enemy->body.radius * sinf(angle);
 
         Renderer_Draw_Point(target, pointX, pointY, color);
     }
@@ -158,7 +158,7 @@ void Enemy_Set_Route_Render(Enemy* enemy)
 {
     for (int point = 0; point < ROUTE_RENDER_COUNT; point++)
     {
-        double t = 1. * point * (enemy->route.waypointCount - 3) / ROUTE_RENDER_COUNT;
+        float t = 1.f * point * (enemy->route.waypointCount - 3) / ROUTE_RENDER_COUNT;
         Vector curvePoint = Follow_Curve_Constant(enemy->route, t, true);
         enemy->routeRender[point].x = curvePoint.x;
         enemy->routeRender[point].y = curvePoint.y;

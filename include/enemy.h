@@ -15,15 +15,15 @@ typedef struct {
     int id;
 
     Vector position;
-    double speed;
+    float speed;
 
     bool fire;
-    double fireTimer;
+    float fireTimer;
 
     BodyCircle body;
 
     Path route;
-    double t;
+    float t;
     Vector routeRender[ROUTE_RENDER_COUNT];
 
     Vector model[ENEMY_MODEL_COUNT];
@@ -33,7 +33,7 @@ typedef struct {
 } Enemy;
 
 int Enemy_Initialize(Path route);
-void Enemy_Update(Enemy* enemy, double dt);
+void Enemy_Update(Enemy* enemy, float dt);
 void Enemy_Render(GPU_Target* target, Enemy* enemy);
 
 void Enemy_Set_Route_Render(Enemy* enemy);

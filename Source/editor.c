@@ -20,11 +20,11 @@ void Editor_Initialize()
     editor.activeEnemy = -1;
 }
 
-void Editor_Update(double dt)
+void Editor_Update(float dt)
 {
     VectorInt mousePos;
     Uint32 mouseButtonMask = SDL_GetMouseState(&mousePos.x, &mousePos.y);
-    Vector mouseGamePos = Renderer_Screen_To_Game_TransformF((float) mousePos.x, (float) mousePos.y, false);
+    Vector mouseGamePos = Renderer_Screen_To_Game_TransformF( mousePos.x,  mousePos.y, false);
 
     // SELECT POINTS / ENEMIES
     if (!input.shiftHeld)
@@ -116,8 +116,8 @@ void Editor_Update(double dt)
     // ZOOM CAMERA
     if (input.ctrlHeld && input.scroll)
     {
-        renderer.zoom += input.scroll / 50.;
-        if (renderer.zoom <= 1 / 100.) renderer.zoom = 1 / 50.;
+        renderer.zoom += input.scroll / 50.f;
+        if (renderer.zoom <= 1 / 100.) renderer.zoom = 1 / 50.f;
     }
 
     // RESET CAMERA
@@ -164,7 +164,7 @@ void Editor_Update(double dt)
 
             for (int point = 0; point < EDITOR_POINT_COUNT; point++)
             {
-                double t = 1. * point * (editor.tempPath.waypointCount - 3) / (EDITOR_POINT_COUNT - 1);
+                float t = 1.f * point * (editor.tempPath.waypointCount - 3) / (EDITOR_POINT_COUNT - 1);
                 Vector curvePoint = Follow_Curve_Constant(editor.tempPath, t, true);
                 editor.pathPoints[point].x = curvePoint.x;
                 editor.pathPoints[point].y = curvePoint.y;
@@ -179,11 +179,11 @@ void Editor_Select_Edit_Point(VectorInt mousePos, bool isEnemyRoute)
 {
     Path pathToEdit = isEnemyRoute ? world.enemies[editor.activeEnemy].route : editor.tempPath;
 
-    double minDistance = 50;
+    float minDistance = 50;
     for (int point = 0; point < pathToEdit.waypointCount; point++)
     {
-        Vector screenPoint = Renderer_Game_To_Screen_TransformF((float) pathToEdit.waypoints[point].x, (float) pathToEdit.waypoints[point].y, false);
-        double distance = Distance(mousePos.x, mousePos.y, (double) screenPoint.x, (double) screenPoint.y);
+        Vector screenPoint = Renderer_Game_To_Screen_TransformF( pathToEdit.waypoints[point].x,  pathToEdit.waypoints[point].y, false);
+        float distance = Distance( mousePos.x,  mousePos.y, screenPoint.x, screenPoint.y);
         if (distance < 50)
         {
             if (distance < minDistance)
@@ -204,11 +204,11 @@ void Editor_Select_Edit_Point(VectorInt mousePos, bool isEnemyRoute)
 
 void Editor_Select_Enemy(VectorInt mousePos)
 {
-    double minDistance = 50;
+    float minDistance = 50;
     for (int enemy = 0; enemy < world.enemyCount; enemy++)
     {
-        Vector screenEnemyPos = Renderer_Game_To_Screen_TransformF((float) world.enemies[enemy].position.x, (float) world.enemies[enemy].position.y, false);
-        double distance = Distance(mousePos.x, mousePos.y, (double) screenEnemyPos.x, (double) screenEnemyPos.y);
+        Vector screenEnemyPos = Renderer_Game_To_Screen_TransformF( world.enemies[enemy].position.x,  world.enemies[enemy].position.y, false);
+        float distance = Distance( mousePos.x,  mousePos.y, screenEnemyPos.x, screenEnemyPos.y);
         if (distance < 50)
         {
             if (distance < minDistance)
@@ -233,7 +233,7 @@ void Editor_Select_Enemy(VectorInt mousePos)
 // EDITOR TOOLS
 //=============================
 
-void Editor_Place(double x, double y, bool isEnemyRoute)
+void Editor_Place(float x, float y, bool isEnemyRoute)
 {
     Path* pathToEdit = isEnemyRoute ? &world.enemies[editor.activeEnemy].route : &editor.tempPath;
 
@@ -278,7 +278,7 @@ void Editor_Place(double x, double y, bool isEnemyRoute)
     }
 }
 
-void Editor_Drag(double x, double y)
+void Editor_Drag(float x, float y)
 {
     editor.tempPath.waypoints[editor.pointToEdit].x = x;
     editor.tempPath.waypoints[editor.pointToEdit].y = y;
@@ -372,12 +372,12 @@ void Editor_Render_Edit(GPU_Target* target)
     {
         for (int segment = 0; segment < 40; segment++)
         {
-            double angle = segment / 40. * 2 * M_PI;
-            double pointX = point.x + 50 / renderer.zoom * cos(angle);
-            double pointY = point.y + 50 / renderer.zoom * sin(angle);
+            float angle = segment / 40.f * 2 * F_PI;
+            float pointX = point.x + 50 / renderer.zoom * cosf(angle);
+            float pointY = point.y + 50 / renderer.zoom * sinf(angle);
 
             SDL_Color yellow = { 255, 255, 0, 255 };
-            Renderer_Draw_Point(target, (float) pointX, (float) pointY, yellow);
+            Renderer_Draw_Point(target,  pointX,  pointY, yellow);
         }
     }
 

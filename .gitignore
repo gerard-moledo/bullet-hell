@@ -2,3 +2,4 @@ builds
 *.html
 *.js
 *.wasm
+obj

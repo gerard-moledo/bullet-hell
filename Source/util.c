@@ -4,7 +4,7 @@
 #include <math.h>
 #include <string.h>
 
-Path Path_Initialize(int waypointCount, Vector waypoints[], double durations[])
+Path Path_Initialize(int waypointCount, Vector waypoints[], float durations[])
 {
     Path path;
     path.waypointCount = waypointCount;
@@ -20,7 +20,7 @@ Path Path_Initialize(int waypointCount, Vector waypoints[], double durations[])
     return path;
 }
 
-double Path_Lengths(Path* path)
+float Path_Lengths(Path* path)
 {
     for (int point = 0; point < path->waypointCount; point++)
     {
@@ -30,7 +30,7 @@ double Path_Lengths(Path* path)
         }
         else
         {
-            path->lengths[point] = Simpsons_Rule_Compound(*path, 0, (double) point - 1);
+            path->lengths[point] = Simpsons_Rule_Compound(*path, 0, (float) (point - 1));
         }
     }
 
@@ -41,7 +41,7 @@ double Path_Lengths(Path* path)
     return path->length;
 }
 
-double Path_Duration(Path* path)
+float Path_Duration(Path* path)
 {
     path->duration = 0;
 
@@ -53,72 +53,77 @@ double Path_Duration(Path* path)
     return path->duration;
 }
 
-int Round_To_Int(double num)
+int Round_To_Int(float num)
 {
     return (int) (num < 0 ? num - 0.5 : num + 0.5);
 }
 
-double Distance(double x1, double y1, double x2, double y2)
+float Distance(float x1, float y1, float x2, float y2)
 {
-    return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+    return sqrtf((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
-double Lerp(double start, double finish, double t)
+float DistanceI(int x1, int y1, int x2, int y2)
+{
+    return Distance((float) x1, (float) y1, (float) x2, (float) y2);
+}
+
+float Lerp(float start, float finish, float t)
 {
     return start + t * (finish - start);
 }
 
-double Map(double s0, double s1, double f0, double f1, double t)
+float Map(float s0, float s1, float f0, float f1, float t)
 {
     return f0 + (t - s0) * (f1 - f0) / (s1 - s0);
 }
 
-double Hermite(double p0, double p1, double p2, double p3, double t)
+float Hermite(float p0, float p1, float p2, float p3, float t)
 {
-    double tSquared = t * t;
-    double tCubed = t * tSquared;
-    double tension = 1;
+    float tSquared = t * t;
+    float tCubed = t * tSquared;
+    float tension = 1;
 
-    return  (-.5 * tension * tCubed + tension * tSquared - .5 * tension * t) * p0 +
-        (1 + .5 * tSquared * (tension - 6) + .5 * tCubed * (4 - tension)) * p1 +
-        (.5 * tCubed * (tension - 4) + .5 * tension * t - (tension - 3) * tSquared) * p2 +
-        (-.5 * tension * tSquared + .5 * tension * tCubed) * p3;
+    return  (-.5f * tension * tCubed + tension * tSquared - .5f * tension * t) * p0 +
+        (1 + .5f * tSquared * (tension - 6) + .5f * tCubed * (4 - tension)) * p1 +
+        (.5f * tCubed * (tension - 4) + .5f * tension * t - (tension - 3) * tSquared) * p2 +
+        (-.5f * tension * tSquared + .5f * tension * tCubed) * p3;
 }
 
-double Hermite_Derivative(double p0, double p1, double p2, double p3, double t)
+float Hermite_Derivative(float p0, float p1, float p2, float p3, float t)
 {
-    double tSquared = t * t;
-    double tension = 1;
+    float tSquared = t * t;
+    float tension = 1;
 
-    double P0 = (-1.5 * tension * tSquared + 2 * tension * t - .5 * tension) * p0;
-    double P1 = (1 * t * (tension - 6) + 1.5 * tSquared * (4 - tension)) * p1;
-    double P2 = (1.5 * tSquared * (tension - 4) + .5 * tension - 2 * (tension - 3) * t) * p2;
-    double P3 = (-1 * tension * t + 1.5 * tension * tSquared) * p3;
+    float P0 = (-1.5f * tension * tSquared + 2 * tension * t - .5f * tension) * p0;
+    float P1 = (1 * t * (tension - 6) + 1.5f * tSquared * (4 - tension)) * p1;
+    float P2 = (1.5f * tSquared * (tension - 4) + .5f * tension - 2 * (tension - 3) * t) * p2;
+    float P3 = (-1 * tension * t + 1.5f * tension * tSquared) * p3;
     return P0 + P1 + P2 + P3;
 }
 
-double Arc_Length(Path path, int arcStart, double t)
+float Arc_Length(Path path, int arcStart, float t)
 {
     Vector p1 = path.waypoints[arcStart - 1];
     Vector p2 = path.waypoints[arcStart];
     Vector p3 = path.waypoints[arcStart + 1];
     Vector p4 = path.waypoints[arcStart + 2];
 
-    double dx = Hermite_Derivative( p1.x, p2.x, p3.x, p4.x, t);
-    double dy = Hermite_Derivative( p1.y, p2.y, p3.y, p4.y, t);
+    float dx = Hermite_Derivative( p1.x, p2.x, p3.x, p4.x, t);
+    float dy = Hermite_Derivative( p1.y, p2.y, p3.y, p4.y, t);
 
-    return sqrt(dx*dx + dy*dy);
+    return sqrtf(dx*dx + dy*dy);
 
 }
 
-double Simpsons_Rule(Path path, int arcStart, double t)
+float Simpsons_Rule(Path path, int arcStart, float t)
 {
     int n = 10;
-    double h = t / n;
+    float h = t / n;
 
-    double fx0 = Arc_Length(path, arcStart, 0) + Arc_Length(path, arcStart, t);
-    double fx4 = 0;
-    double fx2 = 0;
+    float fx0 = Arc_Length(path, arcStart, 0) + Arc_Length(path, arcStart, t);
+    float fx4 = 0;
+    float fx2 = 0;
 
     for (int i4 = 1; i4 < n; i4 += 2)
     {
@@ -132,9 +137,9 @@ double Simpsons_Rule(Path path, int arcStart, double t)
     return h/3 * (fx0 + 2 * fx2 + 4 * fx4);;
 }
 
-double Simpsons_Rule_Compound(Path path, int arcStart, double t)
+float Simpsons_Rule_Compound(Path path, int arcStart, float t)
 {
-    double distance = 0;
+    float distance = 0;
 
     for (int arc = arcStart; arc < (int) t; arc++)
     {
@@ -151,7 +156,7 @@ double Simpsons_Rule_Compound(Path path, int arcStart, double t)
 
 
 
-Vector Follow_Curve(Path path, double t)
+Vector Follow_Curve(Path path, float t)
 {
     int current = (int) t + 1;
 
@@ -167,28 +172,28 @@ Vector Follow_Curve(Path path, double t)
     return point;
 }
 
-Vector Follow_Curve_Constant(Path path, double t, bool dragging)
+Vector Follow_Curve_Constant(Path path, float t, bool dragging)
 {
     if (t == 0) return path.waypoints[1];
 
-    double tMapped = t;
+    float tMapped = t;
     for (int point = 2; point < path.waypointCount - 1; point++)
     {
-        double pathRatio = path.lengths[point] / path.length * (path.waypointCount - 3);
-        double previousPathRatio = path.lengths[point - 1] / path.length * (path.waypointCount - 3);
+        float pathRatio = path.lengths[point] / path.length * (path.waypointCount - 3);
+        float previousPathRatio = path.lengths[point - 1] / path.length * (path.waypointCount - 3);
         if (t < pathRatio)
         {
-            tMapped = Map(previousPathRatio, pathRatio, point - 2, point - 1, t);
+            tMapped = Map(previousPathRatio, pathRatio, (float) (point - 2), (float) (point - 1), t);
             break;
         }
     }
 
-    double desiredDistance = t * path.length / (path.waypointCount - 3);
-    double tLast = tMapped;
-    double tConstant = tLast;
+    float desiredDistance = t * path.length / (path.waypointCount - 3);
+    float tLast = tMapped;
+    float tConstant = tLast;
 
-    double pathLength;
-    double arcLength;
+    float pathLength;
+    float arcLength;
 
     int count = 0;
 

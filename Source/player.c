@@ -18,7 +18,7 @@ void Player_Initialize()
     player.velocity.x = 0;
     player.velocity.y = 0;
 
-    player.reloadTime = 0.1;
+    player.reloadTime = 0.1f;
 
     player.body.position = player.position;
     player.body.radius = 1;
@@ -38,7 +38,7 @@ void Player_Initialize()
     world.player = player;
 }
 
-void Player_Update(Player* player, double dt)
+void Player_Update(Player* player, float dt)
 {
     player->velocity.x = 0;
     player->velocity.y = 0;
@@ -48,7 +48,7 @@ void Player_Update(Player* player, double dt)
     if (input.left) player->velocity.x = -player->speed;
     if (input.right) player->velocity.x = player->speed;
 
-    player->speedModifier = input.toggleCreep ? 0.5 : 1;
+    player->speedModifier = input.toggleCreep ? 0.5f : 1;
 
     player->position.x += player->velocity.x * player->speedModifier * dt;
     player->position.y += player->velocity.y * player->speedModifier * dt;
@@ -80,8 +80,8 @@ void Player_Update(Player* player, double dt)
 
     for (int point = 0; point < PLAYER_MODEL_COUNT; point++)
     {
-        player->render[point*2] = (float) (player->position.x + player->model[point].x);
-        player->render[point*2 + 1] = (float) (player->position.y + player->model[point].y);
+        player->render[point*2] =  (player->position.x + player->model[point].x);
+        player->render[point*2 + 1] =  (player->position.y + player->model[point].y);
     }
 
     player->body.position = player->position;
@@ -89,15 +89,15 @@ void Player_Update(Player* player, double dt)
 
 void Player_Render(GPU_Target* target, Player* player)
 {
-    for (int segment = 0; segment < 80; segment++)
-    {
-        double angle = segment / 80. * 2 * M_PI;
-        double pointX = player->position.x + player->body.radius * cos(angle);
-        double pointY = player->position.y + player->body.radius * sin(angle);
+    //for (int segment = 0; segment < 80; segment++)
+    //{
+    //    float angle = segment / 80.f * 2 * F_PI;
+    //    float pointX = player->position.x + player->body.radius * cosf(angle);
+    //    float pointY = player->position.y + player->body.radius * sinf(angle);
 
-        SDL_Color color = { 255, 0, 0, 255 };
-        Renderer_Draw_Point(target, pointX, pointY, color);
-    }
+    //    SDL_Color color = { 255, 0, 0, 255 };
+    //    Renderer_Draw_Point(target, pointX, pointY, color);
+    //}
 
     SDL_Color color = { 255, 255, 255, 255 };
     Renderer_Draw_Lines(target, player->render, PLAYER_MODEL_COUNT * 2, color);

@@ -72,7 +72,7 @@ void World_Clean()
     }
 }
 
-void World_Update(double dt)
+void World_Update(float dt)
 {
     if (game.state == state_editor)
     {

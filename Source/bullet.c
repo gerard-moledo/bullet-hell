@@ -4,7 +4,7 @@
 
 #include "globals.h"
 
-void Bullet_Create(Vector position, Vector velocity, double radius, double bodyRadius, Team team)
+void Bullet_Create(Vector position, Vector velocity, float radius, float bodyRadius, Team team)
 {
     if (team == team_player && world.playerBulletsCount >= WORLD_MAX_PLAYER_BULLETS)
         return;
@@ -46,7 +46,7 @@ void Bullet_Create(Vector position, Vector velocity, double radius, double bodyR
     }
 }
 
-void Bullet_Update(Bullet* bullet, double dt)
+void Bullet_Update(Bullet* bullet, float dt)
 {
     bullet->position.x += bullet->velocity.x * dt;
     bullet->position.y += bullet->velocity.y * dt;
