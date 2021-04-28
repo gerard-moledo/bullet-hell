@@ -123,41 +123,33 @@ void World_Physics_Update()
     }
 }
 
-void World_Render()
+void World_Render(GPU_Target* target)
 {
-    if (world.player.exists)
+    for (int bullet = 0; bullet < world.playerBulletsCount; bullet++)
     {
-        Player_Render(&world.player);
-    }
-
-    if (world.playerBulletsCount > 0)
-    {
-        SDL_SetRenderDrawColor(game.renderer, 255, 255, 255, 255);
-        SDL_RenderFillRects(game.renderer, renderer.bulletPlayerBatch, world.playerBulletsCount);
-    }
-
-    if (world.enemyBulletsCount > 0)
-    {
-        SDL_SetRenderDrawColor(game.renderer, 255, 255, 255, 255);
-        SDL_RenderFillRects(game.renderer, renderer.bulletEnemyBatch, world.enemyBulletsCount);
+        Bullet_Render(target, &world.playerBullets[bullet]);
     }
 
     for (int enemy = 0; enemy < world.enemyCount; enemy++)
     {
         if (world.enemies[enemy].id != -1)
         {
-            Enemy_Render(&world.enemies[enemy]);
+                Enemy_Render(target, &world.enemies[enemy]);
         }
     }
 
+    for (int bullet = 0; bullet < world.enemyBulletsCount; bullet++)
+    {
+        Bullet_Render(target, &world.enemyBullets[bullet]);
+    }
+
+    if (world.player.exists)
+    {
+        Player_Render(target, &world.player);
+    }
+
     // Render Screen Border
-    SDL_SetRenderDrawColor(game.renderer, 255, 255, 255, 255);
-    SDL_Point windowBorder[5] = {
-        { -WORLD_PLAY_WIDTH / 2, -WORLD_PLAY_HEIGHT / 2 },
-        { WORLD_PLAY_WIDTH / 2 - 1, -WORLD_PLAY_HEIGHT / 2},
-        { WORLD_PLAY_WIDTH / 2 - 1, WORLD_PLAY_HEIGHT / 2 - 1 },
-        { -WORLD_PLAY_WIDTH / 2, WORLD_PLAY_HEIGHT / 2 - 1 },
-        { -WORLD_PLAY_WIDTH / 2, -WORLD_PLAY_HEIGHT / 2 }
-    };
-    Renderer_Draw_Lines(windowBorder, 5);
+    SDL_Color color = { 255, 255, 255, 255 };
+    GPU_Rect border = { -WORLD_PLAY_WIDTH / 2 + 1, -WORLD_PLAY_HEIGHT / 2, WORLD_PLAY_WIDTH - 1, WORLD_PLAY_HEIGHT - 1 };
+    Renderer_Draw_Rectangle(target, border, color, false);
 }

@@ -72,13 +72,13 @@ void Enemy_Update(Enemy* enemy, double dt)
         if (enemy->fire)
         {
             Vector velocity;
-            for (int shot = 0; shot < 50; shot++)
+            for (int shot = 0; shot < 30; shot++)
             {
-                double angle = shot / 50. * 2 * M_PI;
-                velocity.x = cos(angle) * 100;
-                velocity.y = sin(angle) * 100;
+                double angle = shot / 30. * 2 * M_PI;
+                velocity.x = cos(angle) * 70;
+                velocity.y = sin(angle) * 70;
 
-                Bullet_Create(enemy->position, velocity, team_enemy);
+                Bullet_Create(enemy->position, velocity, 6, 2, team_enemy);
             }
 
             enemy->fire = false;
@@ -107,66 +107,50 @@ void Enemy_Update(Enemy* enemy, double dt)
     enemy->position.x = pointOnCurve.x;
     enemy->position.y = pointOnCurve.y;
 
-    for (int point = 0; point < 5; point++)
+    for (int point = 0; point < ENEMY_MODEL_COUNT; point++)
     {
-        enemy->render[point].x = Round_To_Int(enemy->position.x + enemy->model[point].x);
-        enemy->render[point].y = Round_To_Int(enemy->position.y + enemy->model[point].y);
+        enemy->render[point * 2] = (float) (enemy->position.x + enemy->model[point].x);
+        enemy->render[point * 2 + 1] = (float) (enemy->position.y + enemy->model[point].y);
     }
 
     enemy->body.position = enemy->position;
 }
 
-void Enemy_Render(Enemy* enemy)
+void Enemy_Render(GPU_Target* target, Enemy* enemy)
 {
+    SDL_Color white = { 255, 255, 255, 255 };
+    SDL_Color yellow = { 255, 255, 0, 255 };
+    SDL_Color green = { 0, 255, 0, 255 };
+    SDL_Color red = { 255, 0, 0, 255 };
+    
     // Draws Ship
-    if (enemy->edit)
-    {
-        SDL_SetRenderDrawColor(game.renderer, 255, 255, 0, 255);
-    }
-    else
-    {
-        SDL_SetRenderDrawColor(game.renderer, 255, 255, 255, 255);
-    }
-    Renderer_Draw_Lines(enemy->render, 5);
-
+    SDL_Color color = enemy->edit ? yellow : green;
+    Renderer_Draw_Lines(target, enemy->render, ENEMY_MODEL_COUNT * 2, color);
+    
     if (game.state == state_editor)
     {
         // Draw First Control Point
-        if (enemy->edit)
-        {
-            SDL_SetRenderDrawColor(game.renderer, 0, 255, 0, 255);
-        }
-        else
-        {
-            SDL_SetRenderDrawColor(game.renderer, 255, 255, 255, 255);
-        }
-        Renderer_Draw_Point(Round_To_Int(enemy->route.waypoints[0].x), Round_To_Int(enemy->route.waypoints[0].y));
+        color = enemy->edit ? green : white;
+        Renderer_Draw_Point(target, enemy->route.waypoints[0].x, enemy->route.waypoints[0].y, color);
 
         // Draws Route
-        SDL_SetRenderDrawColor(game.renderer, 255, 255, 255, 255);
-        Renderer_Draw_Points(enemy->routeRender, ROUTE_RENDER_COUNT);
+        color = white;
+        Renderer_Draw_Points(target, enemy->routeRender, ROUTE_RENDER_COUNT, color);
 
         // Draw Last Control Point
-        if (enemy->edit)
-        {
-            SDL_SetRenderDrawColor(game.renderer, 0, 255, 0, 255);
-        }
-        else
-        {
-            SDL_SetRenderDrawColor(game.renderer, 255, 255, 255, 255);
-        }
-        Renderer_Draw_Point(Round_To_Int(enemy->route.waypoints[enemy->route.waypointCount - 1].x), Round_To_Int(enemy->route.waypoints[enemy->route.waypointCount - 1].y));
+        color = enemy->edit ? green : white;
+        Renderer_Draw_Point(target, enemy->route.waypoints[enemy->route.waypointCount - 1].x, enemy->route.waypoints[enemy->route.waypointCount - 1].y, color);
     }
 
     // Draw Collision Shape
-    SDL_SetRenderDrawColor(game.renderer, 255, 0, 0, 255);
+    color = red;
     for (int segment = 0; segment < 40; segment++)
     {
         double angle = segment / 40. * 2 * M_PI;
         double pointX = enemy->position.x + enemy->body.radius * cos(angle);
         double pointY = enemy->position.y + enemy->body.radius * sin(angle);
 
-        Renderer_Draw_Point(Round_To_Int(pointX), Round_To_Int(pointY));
+        Renderer_Draw_Point(target, pointX, pointY, color);
     }
 }
 
@@ -176,8 +160,8 @@ void Enemy_Set_Route_Render(Enemy* enemy)
     {
         double t = 1. * point * (enemy->route.waypointCount - 3) / ROUTE_RENDER_COUNT;
         Vector curvePoint = Follow_Curve_Constant(enemy->route, t, true);
-        enemy->routeRender[point].x = Round_To_Int(curvePoint.x);
-        enemy->routeRender[point].y = Round_To_Int(curvePoint.y);
+        enemy->routeRender[point].x = curvePoint.x;
+        enemy->routeRender[point].y = curvePoint.y;
     }
 }
 

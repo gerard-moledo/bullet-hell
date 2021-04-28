@@ -31,6 +31,6 @@ void World_Initialize();
 void World_Clean();
 void World_Update(double dt);
 void World_Physics_Update();
-void World_Render();
+void World_Render(GPU_Target* target);
 
 #endif

@@ -11,26 +11,28 @@ Game game = {NULL};
 
 void Game_Initialize()
 {
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
+    SDL_Init(SDL_INIT_VIDEO);
+    
+    game.window = SDL_CreateWindow("Bullet Hell", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
+    
+    GPU_SetInitWindow(SDL_GetWindowID(game.window));
 
-    game.window = SDL_CreateWindow("Bullet Hell", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-
-#ifdef __EMSCRIPTEN__
-    game.renderer = SDL_CreateRenderer(game.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
-#else
-    game.renderer = SDL_CreateRenderer(game.window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+#ifdef __EMSCRIPTEN
+    GPU_SetPreInitFlags(GPU_INIT_DISABLE_VSYNC);
 #endif
+
+    game.gpu_target = GPU_Init(0, 0, 0);
 
     game.previousFrameTime = clock();
     game.running = true;
     game.pause = false;
     game.state = state_editor;
-    Game_Update_State();
 
     Renderer_Initialize();
-
     World_Initialize();
     Editor_Initialize();
+
+    Game_Update_State();
 }
 
 void Game_Run()
@@ -54,7 +56,9 @@ void Game_Loop()
     double elapsedTime = ((double) currentTime - (double) game.previousFrameTime) / CLOCKS_PER_SEC;
     game.previousFrameTime = currentTime;
 
-    //printf("Bullets: %d, Elapsed Time: %f\n", world.enemyBulletsCount, elapsedTime);
+#ifndef __EMSCRIPTEN__
+    printf("Bullets: %d, Elapsed Time: %f\n", world.enemyBulletsCount, elapsedTime);
+#endif
 
     Input_Refresh();
     Input_Poll_Events();
@@ -70,16 +74,15 @@ void Game_Loop()
         World_Physics_Update();
         World_Clean();
 
-        Renderer_Batch();
         Renderer_Render();
     }
 }
 
 void Game_Quit()
 {
-    SDL_DestroyRenderer(game.renderer);
-    SDL_DestroyWindow(game.window);
+    Renderer_Destroy();
 
+    GPU_Quit();
     SDL_Quit();
 }
 
@@ -90,5 +93,6 @@ void Game_Update_State()
     world.enemies[editor.activeEnemy].edit = false;
 
     renderer.renderWindowSize.x = game.state == state_play ? WORLD_PLAY_WIDTH : WINDOW_WIDTH;
+    renderer.renderWindowSize.y = game.state == state_play ? WORLD_PLAY_HEIGHT: WINDOW_HEIGHT;
     Renderer_Reset_Camera();
 }

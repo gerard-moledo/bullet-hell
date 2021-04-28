@@ -4,12 +4,13 @@
 #include "util.h"
 
 #include "SDL.h"
+#include "SDL_gpu.h"
 
 #define EDITOR_POINT_COUNT 1000
 
 typedef struct {
     Path tempPath;
-    SDL_Point pathPoints[EDITOR_POINT_COUNT];
+    Vector pathPoints[EDITOR_POINT_COUNT];
     int pointToEdit;
     int enemyToEdit;
     int activeEnemy;
@@ -29,8 +30,8 @@ void Editor_Drag_Enemy(Vector mouseGamePos, VectorInt mousePos);
 void Editor_Delete_Point(bool isEnemyRoute);
 void Editor_Delete_Enemy();
 
-void Editor_Render();
-void Editor_Render_Path();
-void Editor_Render_Edit();
+void Editor_Render(GPU_Target* target);
+void Editor_Render_Path(GPU_Target* target);
+void Editor_Render_Edit(GPU_Target* target);
 
 #endif

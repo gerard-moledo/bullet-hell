@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include "SDL.h"
+#include "SDL_gpu.h"
 
 #include "util.h"
 
@@ -18,15 +19,16 @@ typedef struct {
     BodyCircle body;
 
     bool fire;
-    SDL_TimerID fireTimer;
+    double fireTimer;
+    double reloadTime;
 
     Vector model[PLAYER_MODEL_COUNT];
-    SDL_Point render[PLAYER_MODEL_COUNT];
+    float render[PLAYER_MODEL_COUNT * 2];
 } Player;
 
 void Player_Initialize();
 void Player_Update(Player* player, double dt);
-void Player_Render(Player* player);
+void Player_Render(GPU_Target* target, Player* player);
 
 Uint32 Player_Reload(Uint32 interval, void* param);
 

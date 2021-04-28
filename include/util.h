@@ -4,8 +4,7 @@
 typedef enum { false = 0, true } bool;
 typedef enum { toggle_up = 1, toggle_down = -1, toggle_none = 0 } Toggle;
 
-#ifndef _MATH_DEFINES_DEFINED
-#define _MATH_DEFINES_DEFINED
+#ifndef M_PI
 #define M_PI 3.14159265358979323846264338327950288
 #endif
 

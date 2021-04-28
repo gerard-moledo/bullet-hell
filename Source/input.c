@@ -116,8 +116,6 @@ void Input_Handle_Mouse(SDL_MouseButtonEvent e)
                 input.rightMouseDown = true;
             }
         }
-
-        //if (e.button == SDL_BUTTON_MIDDLE) game.pause = !game.pause;
     }
 
     if (e.type == SDL_MOUSEBUTTONUP)

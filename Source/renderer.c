@@ -16,7 +16,10 @@ void Renderer_Initialize()
 
     renderer.zoom = 1;
 
-    renderer.renderTexture = SDL_CreateTexture(game.renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, RENDER_TEXTURE_WIDTH, RENDER_TEXTURE_HEIGHT);
+    renderer.renderImage = GPU_CreateImage(RENDER_TEXTURE_WIDTH, RENDER_TEXTURE_HEIGHT, GPU_FORMAT_RGBA);
+    renderer.renderImage->anchor_x = 0;
+    renderer.renderImage->anchor_y = 0;
+    GPU_LoadTarget(renderer.renderImage);
 }
 
 void Renderer_Reset_Camera()
@@ -30,135 +33,122 @@ void Renderer_Reset_Camera()
 // Draw Routines
 // ====================
 
-void Renderer_Draw_Point(int x, int y)
+void Renderer_Draw_Point(GPU_Target* target, double x, double y, SDL_Color color)
 {
     Vector gamePoint; 
     gamePoint.x = x;
     gamePoint.y = y;
-    VectorInt renderPoint = Renderer_Game_To_Screen_Transform(gamePoint, true);
+    Vector renderPoint = Renderer_Game_To_Screen_TransformV(gamePoint, true);
 
-    SDL_RenderDrawPoint(game.renderer, renderPoint.x, renderPoint.y);
+    GPU_Pixel(target, (float) renderPoint.x, (float) renderPoint.y, color);
 }
 
-void Renderer_Draw_Points(SDL_Point points[], int pointCount)
+void Renderer_Draw_Points(GPU_Target* target, Vector points[], int pointCount, SDL_Color color)
 {
     for (int point = 0; point < pointCount; point++)
     {
-        VectorInt renderPoint = Renderer_Game_To_Screen_Transform_SDLPoint(points[point], true);
+        Vector renderPoint = Renderer_Game_To_Screen_TransformV(points[point], true);
 
-        points[point].x = renderPoint.x;
-        points[point].y = renderPoint.y;
-    }
-
-    SDL_RenderDrawPoints(game.renderer, points, pointCount);
-
-    for (int point = 0; point < pointCount; point++)
-    {
-        SDL_Point gamePoint = Renderer_Screen_To_Game_Transform_SDLPoint(points[point], true);
-
-        points[point].x = gamePoint.x;
-        points[point].y = gamePoint.y;
+        GPU_Pixel(target, (float) renderPoint.x, (float) renderPoint.y, color);
     }
 }
 
-void Renderer_Draw_Lines(SDL_Point points[], int pointCount)
+void Renderer_Draw_Lines(GPU_Target* target, float points[], int pointCount, SDL_Color color)
 {
-    for (int point = 0; point < pointCount; point++)
+    for (int point = 0; point < pointCount; point += 2)
     {
-        VectorInt renderPoint = Renderer_Game_To_Screen_Transform_SDLPoint(points[point], true);
-
-        points[point].x = renderPoint.x;
-        points[point].y = renderPoint.y;
+        Vector renderPoint = Renderer_Game_To_Screen_TransformF(points[point], points[point + 1], true);
+        points[point] = (float)renderPoint.x;
+        points[point + 1] = (float)renderPoint.y;
     }
 
-    SDL_RenderDrawLines(game.renderer, points, pointCount);
+    GPU_Polygon(target, pointCount / 2, points, color);
+}
 
-    for (int point = 0; point < pointCount; point++)
+void Renderer_Draw_Rectangle(GPU_Target* target, GPU_Rect rect, SDL_Color color, bool isFilled)
+{
+    Vector topLeft = Renderer_Game_To_Screen_TransformF(rect.x, rect.y, true);
+    Vector bottomRight = Renderer_Game_To_Screen_TransformF(rect.x + rect.w, rect.y + rect.h, true);
+    
+    if (isFilled)
     {
-        SDL_Point gamePoint = Renderer_Screen_To_Game_Transform_SDLPoint(points[point], true);
-
-        points[point].x = gamePoint.x;
-        points[point].y = gamePoint.y;
+        GPU_RectangleFilled(target, topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, color);
+    }
+    else
+    {
+        GPU_Rectangle(target, topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, color);
     }
 }
 
 
 // ==========================
-// BATCH & RENDER
+// RENDER
 // ==========================
-void Renderer_Batch()
-{
-    for (int id = 0; id < world.playerBulletsCount; id++)
-    {
-        VectorInt renderPoint = Renderer_Game_To_Screen_Transform(world.playerBullets[id].position, true);
-        SDL_Rect renderRect;
-        renderRect.x = renderPoint.x;
-        renderRect.y = renderPoint.y;
-        renderRect.w = 2;
-        renderRect.h = 2;
-        renderer.bulletPlayerBatch[id] = renderRect;
-    }
-    for (int id = 0; id < world.enemyBulletsCount; id++)
-    {
-        VectorInt renderPoint = Renderer_Game_To_Screen_Transform(world.enemyBullets[id].position, true);
-        SDL_Rect renderRect;
-        renderRect.x = renderPoint.x;
-        renderRect.y = renderPoint.y;
-        renderRect.w = 2;
-        renderRect.h = 2;
-        renderer.bulletEnemyBatch[id] = renderRect;
-    }
-}
 
 void Renderer_Render()
 {
-    // Target Texture Render
-    SDL_SetRenderTarget(game.renderer, renderer.renderTexture);
-
-    SDL_SetRenderDrawColor(game.renderer, 0, 0, 0, 255);
-    SDL_RenderClear(game.renderer);
-
+    GPU_ClearRGB(renderer.renderImage->target, 0, 0, 0);
 
     // RENDER
-    World_Render();
+    World_Render(renderer.renderImage->target);
     if (game.state == state_editor)
     {
-        Editor_Render();
+        Editor_Render(renderer.renderImage->target);
     }
 
 
-    // Target Screen Render
-    SDL_SetRenderTarget(game.renderer, NULL);
 
-    SDL_SetRenderDrawColor(game.renderer, 0, 0, 0, 255);
-    SDL_RenderClear(game.renderer);
 
+
+    GPU_ClearRGB(game.gpu_target, 150, 150, 150);
 
     // Render to screen
-    SDL_Rect gameRect;
-    gameRect.x = renderer.renderCenter.x - renderer.cameraPosition.x;
-    gameRect.y = renderer.renderCenter.y - renderer.cameraPosition.y;
-    gameRect.w = renderer.renderWindowSize.x;
-    gameRect.h = renderer.renderWindowSize.y;
+    GPU_Rect gameRect;
+    gameRect.x = (float) (renderer.renderCenter.x - renderer.cameraPosition.x);
+    gameRect.y = (float) (renderer.renderCenter.y - renderer.cameraPosition.y);
+    gameRect.w = (float) renderer.renderWindowSize.x;
+    gameRect.h = (float) renderer.renderWindowSize.y;
 
-    SDL_Rect screenRect;
-    screenRect.x = (WINDOW_WIDTH - renderer.renderWindowSize.x) / 2;
-    screenRect.y = (WINDOW_HEIGHT - renderer.renderWindowSize.y) / 2;
-    screenRect.w = renderer.renderWindowSize.x;
-    screenRect.h = renderer.renderWindowSize.y;
-    SDL_RenderCopy(game.renderer, renderer.renderTexture, &gameRect, &screenRect);
+    Vector screenPosition;
+    screenPosition.x = (float) ((WINDOW_WIDTH - renderer.renderWindowSize.x) / 2.);
+    screenPosition.y = (float) ((WINDOW_HEIGHT - renderer.renderWindowSize.y) / 2.);
+
+    GPU_Rect renderRect = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
+    GPU_Blit(renderer.renderImage, &gameRect, game.gpu_target, screenPosition.x, screenPosition.y);
 
 
-    SDL_RenderPresent(game.renderer);
+    GPU_Flip(game.gpu_target);
 }
 
 
 // =======================
 // Conversion Functions
 // =======================
-Vector Renderer_Screen_To_Game_Transform(VectorInt screenPoint, bool isRender)
+
+Vector Renderer_Screen_To_Game_TransformF(double screenX, double screenY, bool isRender)
 {
-    VectorInt origin = isRender ? renderer.renderCenter : renderer.cameraPosition;
+    Vector origin = isRender ? renderer.renderCenter : renderer.cameraPosition;
+
+    Vector gamePosition;
+    gamePosition.x = (double)(screenX - origin.x - renderer.renderWindowSize.x / 2) / renderer.zoom;
+    gamePosition.y = (double)(screenY - origin.y - renderer.renderWindowSize.y / 2) / renderer.zoom;
+    return gamePosition;
+}
+
+Vector Renderer_Game_To_Screen_TransformF(double gameX, double gameY, bool isRender)
+{
+    Vector origin = isRender ? renderer.renderCenter : renderer.cameraPosition;
+
+    Vector screenPoint;
+    screenPoint.x = (gameX * renderer.zoom) + origin.x + renderer.renderWindowSize.x / 2;
+    screenPoint.y = (gameY * renderer.zoom) + origin.y + renderer.renderWindowSize.y / 2;
+
+    return screenPoint;
+}
+
+Vector Renderer_Screen_To_Game_TransformV(Vector screenPoint, bool isRender)
+{
+    Vector origin = isRender ? renderer.renderCenter : renderer.cameraPosition;
 
     Vector gamePosition;
     gamePosition.x = (double) (screenPoint.x - origin.x - renderer.renderWindowSize.x / 2) / renderer.zoom;
@@ -166,44 +156,19 @@ Vector Renderer_Screen_To_Game_Transform(VectorInt screenPoint, bool isRender)
     return gamePosition;
 }
 
-SDL_Point Renderer_Screen_To_Game_Transform_SDLPoint(SDL_Point renderPoint, bool isRender)
+Vector Renderer_Game_To_Screen_TransformV(Vector gamePosition, bool isRender)
 {
-    VectorInt screenPoint;
-    screenPoint.x = renderPoint.x;
-    screenPoint.y = renderPoint.y;
+    Vector origin = isRender ? renderer.renderCenter : renderer.cameraPosition;
 
-    Vector gamePosition = Renderer_Screen_To_Game_Transform(screenPoint, isRender);
-    SDL_Point gamePoint;
-    gamePoint.x = Round_To_Int(gamePosition.x);
-    gamePoint.y = Round_To_Int(gamePosition.y);
-
-    return gamePoint;
-}
-
-VectorInt Renderer_Game_To_Screen_Transform(Vector gamePosition, bool isRender)
-{
-    VectorInt origin = isRender ? renderer.renderCenter : renderer.cameraPosition;
-
-    VectorInt screenPoint;
-    double x = (gamePosition.x * renderer.zoom) + origin.x + renderer.renderWindowSize.x / 2;
-    double y = (gamePosition.y * renderer.zoom) + origin.y + renderer.renderWindowSize.y / 2;
-    screenPoint.x = Round_To_Int(x);
-    screenPoint.y = Round_To_Int(y);
+    Vector screenPoint;
+    screenPoint.x = (gamePosition.x * renderer.zoom) + origin.x + renderer.renderWindowSize.x / 2;
+    screenPoint.y = (gamePosition.y * renderer.zoom) + origin.y + renderer.renderWindowSize.y / 2;
 
     return screenPoint;
 }
 
-VectorInt Renderer_Game_To_Screen_Transform_SDLPoint(SDL_Point renderPoint, bool isRender)
-{
-    Vector gamePosition;
-    gamePosition.x = (double) renderPoint.x;
-    gamePosition.y = (double) renderPoint.y;
-
-    return Renderer_Game_To_Screen_Transform(gamePosition, isRender);
-}
-
-
 void Renderer_Destroy()
 {
-    SDL_DestroyTexture(renderer.renderTexture);
+    GPU_FreeTarget(renderer.renderImage->target);
+    GPU_FreeImage(renderer.renderImage);
 }

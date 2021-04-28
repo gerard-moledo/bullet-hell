@@ -4,10 +4,12 @@
 #include <time.h>
 
 #include "SDL.h"
+#include "SDL_gpu.h"
 
 #include "util.h"
 
 #define ROUTE_RENDER_COUNT 200
+#define ENEMY_MODEL_COUNT 5
 
 typedef struct {
     int id;
@@ -22,17 +24,17 @@ typedef struct {
 
     Path route;
     double t;
-    SDL_Point routeRender[ROUTE_RENDER_COUNT];
+    Vector routeRender[ROUTE_RENDER_COUNT];
 
-    Vector model[5];
-    SDL_Point render[5];
+    Vector model[ENEMY_MODEL_COUNT];
+    float render[ENEMY_MODEL_COUNT * 2];
 
     bool edit;
 } Enemy;
 
 int Enemy_Initialize(Path route);
 void Enemy_Update(Enemy* enemy, double dt);
-void Enemy_Render(Enemy* enemy);
+void Enemy_Render(GPU_Target* target, Enemy* enemy);
 
 void Enemy_Set_Route_Render(Enemy* enemy);
 

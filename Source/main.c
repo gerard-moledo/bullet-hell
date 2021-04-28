@@ -8,8 +8,7 @@ int main(int argc, char* argv[])
     
 #ifdef __EMSCRIPTEN__
     Game_Run_Emscripten();
-#endif
-#ifndef __EMSCRIPTEN__
+#else
     Game_Run();
 #endif
 

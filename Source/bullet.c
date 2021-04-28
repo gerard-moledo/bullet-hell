@@ -4,7 +4,7 @@
 
 #include "globals.h"
 
-void Bullet_Create(Vector position, Vector velocity, Team team)
+void Bullet_Create(Vector position, Vector velocity, double radius, double bodyRadius, Team team)
 {
     if (team == team_player && world.playerBulletsCount >= WORLD_MAX_PLAYER_BULLETS)
         return;
@@ -16,8 +16,9 @@ void Bullet_Create(Vector position, Vector velocity, Team team)
     bullet.team = team;
     bullet.position = position;
     bullet.velocity = velocity;
+    bullet.radius = radius;
     bullet.body.position = position;
-    bullet.body.radius = 2;
+    bullet.body.radius = bodyRadius;
 
     Vector model[5] = {
         {0, -2},
@@ -59,20 +60,13 @@ void Bullet_Update(Bullet* bullet, double dt)
     bullet->body.position = bullet->position;
 }
 
-void Bullet_Render(Bullet* bullet)
+void Bullet_Render(GPU_Target* target, Bullet* bullet)
 {
-//    SDL_SetRenderDrawColor(game.renderer, 255, 0, 0, 255);
-//    for (int segment = 0; segment < 40; segment++)
-//    {
-//        double angle = segment / 40. * 2 * PI;
-//        double pointX = bullet->position.x + bullet->body.radius * cos(angle);
-//        double pointY = bullet->position.y + bullet->body.radius * sin(angle);
-//
-//        Renderer_Draw_Point(Round_To_Int(pointX), Round_To_Int(pointY));
-//    }
-
-    SDL_SetRenderDrawColor(game.renderer, 0, 255, 0, 255);
-    VectorInt point = Renderer_Game_To_Screen_Transform(bullet->position, true);
-    SDL_RenderDrawPoint(game.renderer, point.x, point.y);
-    //Renderer_Draw_Lines(bullet->render, 5);
- }
+    GPU_Rect rect;
+    rect.x = bullet->position.x - bullet->radius / 2;
+    rect.y = bullet->position.y - bullet->radius / 2;
+    rect.w = bullet->radius;
+    rect.h = bullet->radius;
+    SDL_Color color = { 0, 255, 255, 255 };
+    Renderer_Draw_Rectangle(target, rect, color, true);
+}
