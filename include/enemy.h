@@ -8,7 +8,7 @@
 
 #include "util.h"
 
-#define ROUTE_RENDER_COUNT 200
+#define ROUTE_RENDER_COUNT 100
 #define ENEMY_MODEL_COUNT 5
 
 typedef struct {

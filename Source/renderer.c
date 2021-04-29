@@ -35,21 +35,18 @@ void Renderer_Reset_Camera()
 
 void Renderer_Draw_Point(GPU_Target* target, float x, float y, SDL_Color color)
 {
-    Vector gamePoint; 
-    gamePoint.x = x;
-    gamePoint.y = y;
-    Vector renderPoint = Renderer_Game_To_Screen_TransformV(gamePoint, true);
+    Vector renderPoint = Renderer_Game_To_Screen_TransformF(x, y, true);
 
-    GPU_Pixel(target,  renderPoint.x,  renderPoint.y, color);
+    GPU_RectangleFilled(target,  renderPoint.x,  renderPoint.y, renderPoint.x + 1, renderPoint.y + 1, color);
 }
 
 void Renderer_Draw_Points(GPU_Target* target, Vector points[], int pointCount, SDL_Color color)
 {
     for (int point = 0; point < pointCount; point++)
     {
-        Vector renderPoint = Renderer_Game_To_Screen_TransformV(points[point], true);
+        Vector renderPoint = Renderer_Game_To_Screen_TransformF(points[point].x, points[point].y, true);
 
-        GPU_Pixel(target,  renderPoint.x,  renderPoint.y, color);
+        GPU_RectangleFilled(target,  renderPoint.x,  renderPoint.y, renderPoint.x + 1, renderPoint.y + 1, color);
     }
 }
 
@@ -91,6 +88,7 @@ void Renderer_Render()
 
     // RENDER
     World_Render(renderer.renderImage->target);
+
     if (game.state == state_editor)
     {
         Editor_Render(renderer.renderImage->target);

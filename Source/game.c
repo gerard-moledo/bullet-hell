@@ -7,7 +7,7 @@
 
 #include "globals.h"
 
-Game game = {NULL};
+Game game = { 0 };
 
 void Game_Initialize()
 {
@@ -52,6 +52,10 @@ void Game_Run_Emscripten()
 
 void Game_Loop()
 {
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+#endif
+
     clock_t currentTime = clock();
     float elapsedTime = (float) (currentTime -  game.previousFrameTime) / CLOCKS_PER_SEC;
     game.previousFrameTime = currentTime;

@@ -11,9 +11,9 @@ ASSETS = ./Assets
 
 #COMPILER_FLAGS specifies the additional compilation options we're using
 # -w suppresses all warnings
-COMPILER_FLAGS = -DGPU_USE_INT_BOOL ${INCLUDES} 
+COMPILER_FLAGS = -O3 -DGPU_USE_INT_BOOL ${INCLUDES} 
 
-LINKER_FLAGS = -s FULL_ES3=1 -s ALLOW_MEMORY_GROWTH -s USE_SDL=2 -lSDL2_gpu  #-lmingw32 -lSDL2main -lSDL2 -lSDL2_gpu
+LINKER_FLAGS = --profiling -O3 -s FULL_ES3=1 -s ALLOW_MEMORY_GROWTH -s USE_SDL=2 -lSDL2_gpu  #-lmingw32 -lSDL2main -lSDL2 -lSDL2_gpu
 
 #OBJ_NAME specifies the name of our exectuable
 OBJ_NAME = Bullet_Hell.html

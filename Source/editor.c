@@ -24,7 +24,7 @@ void Editor_Update(float dt)
 {
     VectorInt mousePos;
     Uint32 mouseButtonMask = SDL_GetMouseState(&mousePos.x, &mousePos.y);
-    Vector mouseGamePos = Renderer_Screen_To_Game_TransformF( mousePos.x,  mousePos.y, false);
+    Vector mouseGamePos = Renderer_Screen_To_Game_TransformF((float) mousePos.x, (float) mousePos.y, false);
 
     // SELECT POINTS / ENEMIES
     if (!input.shiftHeld)
@@ -116,7 +116,7 @@ void Editor_Update(float dt)
     // ZOOM CAMERA
     if (input.ctrlHeld && input.scroll)
     {
-        renderer.zoom += input.scroll / 50.f;
+        renderer.zoom += Sign((float) input.scroll) / 50.f;
         if (renderer.zoom <= 1 / 100.) renderer.zoom = 1 / 50.f;
     }
 
@@ -183,7 +183,7 @@ void Editor_Select_Edit_Point(VectorInt mousePos, bool isEnemyRoute)
     for (int point = 0; point < pathToEdit.waypointCount; point++)
     {
         Vector screenPoint = Renderer_Game_To_Screen_TransformF( pathToEdit.waypoints[point].x,  pathToEdit.waypoints[point].y, false);
-        float distance = Distance( mousePos.x,  mousePos.y, screenPoint.x, screenPoint.y);
+        float distance = Distance((float) mousePos.x, (float) mousePos.y, screenPoint.x, screenPoint.y);
         if (distance < 50)
         {
             if (distance < minDistance)
@@ -208,7 +208,7 @@ void Editor_Select_Enemy(VectorInt mousePos)
     for (int enemy = 0; enemy < world.enemyCount; enemy++)
     {
         Vector screenEnemyPos = Renderer_Game_To_Screen_TransformF( world.enemies[enemy].position.x,  world.enemies[enemy].position.y, false);
-        float distance = Distance( mousePos.x,  mousePos.y, screenEnemyPos.x, screenEnemyPos.y);
+        float distance = Distance((float) mousePos.x, (float) mousePos.y, screenEnemyPos.x, screenEnemyPos.y);
         if (distance < 50)
         {
             if (distance < minDistance)
@@ -340,7 +340,7 @@ void Editor_Render_Path(GPU_Target* target)
     }
 
     if (editor.tempPath.waypointCount >= 4)
-    {
+    {   
         // Draw Path
         Renderer_Draw_Points(target, editor.pathPoints, EDITOR_POINT_COUNT, white);
 
@@ -354,6 +354,7 @@ void Editor_Render_Path(GPU_Target* target)
 void Editor_Render_Edit(GPU_Target* target)
 {
     Vector point = { RENDER_TEXTURE_WIDTH };
+
 
     if (editor.pointToEdit >= 0 && !input.shiftHeld)
     {

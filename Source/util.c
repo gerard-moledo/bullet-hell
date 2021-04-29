@@ -58,6 +58,11 @@ int Round_To_Int(float num)
     return (int) (num < 0 ? num - 0.5 : num + 0.5);
 }
 
+int Sign(float num)
+{
+    return num > 0 ? 1 : -1;
+}
+
 float Distance(float x1, float y1, float x2, float y2)
 {
     return sqrtf((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));

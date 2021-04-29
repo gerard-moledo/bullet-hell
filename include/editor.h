@@ -6,7 +6,7 @@
 #include "SDL.h"
 #include "SDL_gpu.h"
 
-#define EDITOR_POINT_COUNT 1000
+#define EDITOR_POINT_COUNT 200
 
 typedef struct {
     Path tempPath;

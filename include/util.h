@@ -37,6 +37,7 @@ float Path_Lengths(Path* path);
 float Path_Duration(Path* path);
 
 int Round_To_Int(float num);
+int Sign(float num);
 float Distance(float x1, float y1, float x2, float y2);
 float DistanceI(int x1, int y1, int x2, int y2);
 float Lerp(float start, float finish, float t);

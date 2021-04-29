@@ -124,7 +124,7 @@ void Enemy_Render(GPU_Target* target, Enemy* enemy)
     SDL_Color red = { 255, 0, 0, 255 };
     
     // Draws Ship
-    SDL_Color color = enemy->edit ? yellow : green;
+    SDL_Color color = enemy->edit ? yellow : white;
     Renderer_Draw_Lines(target, enemy->render, ENEMY_MODEL_COUNT * 2, color);
     
     if (game.state == state_editor)

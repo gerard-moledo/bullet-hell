@@ -15,7 +15,7 @@ project "Bullet_Hell"
 
    files { "./Include/*.h", "./Source/*.c" }
 
-   links { "SDL2main", "SDL2", "SDL2_gpu_s" }
+   links { "SDL2main", "SDL2", "SDL2_gpu_s", "opengl32" }
 
    includedirs { "./Include" }
 
