@@ -8,25 +8,42 @@ Renderer renderer = { NULL };
 
 void Renderer_Initialize()
 {
-    renderer.renderCenter.x = RENDER_TEXTURE_WIDTH / 2;
-    renderer.renderCenter.y = RENDER_TEXTURE_HEIGHT / 2;
+    renderer.renderCenter.x = WINDOW_WIDTH / 2;
+    renderer.renderCenter.y = WINDOW_HEIGHT / 2;
 
     renderer.renderWindowSize.x = WORLD_PLAY_WIDTH;
     renderer.renderWindowSize.y = WORLD_PLAY_HEIGHT;
 
     renderer.zoom = 1;
 
-    renderer.renderImage = GPU_CreateImage(RENDER_TEXTURE_WIDTH, RENDER_TEXTURE_HEIGHT, GPU_FORMAT_RGBA);
-    renderer.renderImage->anchor_x = 0;
-    renderer.renderImage->anchor_y = 0;
-    GPU_LoadTarget(renderer.renderImage);
+    renderer.window = SDL_CreateWindow("Bullet Hell", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
+
+    GPU_SetInitWindow(SDL_GetWindowID(renderer.window));
+    renderer.renderTarget = GPU_Init(0, 0, 0);
+
+    renderer.renderTarget->camera.x = CAMERA_OFFSET_X;
+    renderer.renderTarget->camera.y = CAMERA_OFFSET_Y;
+    renderer.renderTarget->camera.use_centered_origin = 0;
 }
 
 void Renderer_Reset_Camera()
 {
-    renderer.cameraPosition.x = 0;
-    renderer.cameraPosition.y = 0;
-    renderer.zoom = 1;
+    renderer.renderTarget->camera.x = CAMERA_OFFSET_X;
+    renderer.renderTarget->camera.y = CAMERA_OFFSET_Y;
+    renderer.renderTarget->camera.zoom_x = 1;
+    renderer.renderTarget->camera.zoom_y = 1;
+}
+
+void Renderer_Clip()
+{
+    Vector playTopLeft = Renderer_World_To_Screen_TransformF((WINDOW_WIDTH - renderer.renderWindowSize.x) / 2 + CAMERA_OFFSET_X,
+                                                             (WINDOW_HEIGHT - renderer.renderWindowSize.y) / 2 + CAMERA_OFFSET_Y , true);
+    GPU_Rect viewport;
+    viewport.x = playTopLeft.x;
+    viewport.y = playTopLeft.y;
+    viewport.w = renderer.renderWindowSize.x;
+    viewport.h = renderer.renderWindowSize.y;
+    GPU_SetClipRect(renderer.renderTarget, viewport);
 }
 
 // ====================
@@ -35,45 +52,32 @@ void Renderer_Reset_Camera()
 
 void Renderer_Draw_Point(GPU_Target* target, float x, float y, SDL_Color color)
 {
-    Vector renderPoint = Renderer_Game_To_Screen_TransformF(x, y, true);
 
-    GPU_RectangleFilled(target,  renderPoint.x,  renderPoint.y, renderPoint.x + 1, renderPoint.y + 1, color);
+    GPU_Pixel(target, x, y, color);
 }
 
 void Renderer_Draw_Points(GPU_Target* target, Vector points[], int pointCount, SDL_Color color)
 {
     for (int point = 0; point < pointCount; point++)
     {
-        Vector renderPoint = Renderer_Game_To_Screen_TransformF(points[point].x, points[point].y, true);
-
-        GPU_RectangleFilled(target,  renderPoint.x,  renderPoint.y, renderPoint.x + 1, renderPoint.y + 1, color);
+        GPU_Pixel(target, points[point].x, points[point].y, color);
     }
 }
 
 void Renderer_Draw_Lines(GPU_Target* target, float points[], int pointCount, SDL_Color color)
 {
-    for (int point = 0; point < pointCount; point += 2)
-    {
-        Vector renderPoint = Renderer_Game_To_Screen_TransformF(points[point], points[point + 1], true);
-        points[point] = renderPoint.x;
-        points[point + 1] = renderPoint.y;
-    }
-
     GPU_Polygon(target, pointCount / 2, points, color);
 }
 
 void Renderer_Draw_Rectangle(GPU_Target* target, GPU_Rect rect, SDL_Color color, bool isFilled)
-{
-    Vector topLeft = Renderer_Game_To_Screen_TransformF(rect.x, rect.y, true);
-    Vector bottomRight = Renderer_Game_To_Screen_TransformF(rect.x + rect.w, rect.y + rect.h, true);
-    
+{   
     if (isFilled)
     {
-        GPU_RectangleFilled(target, topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, color);
+        GPU_RectangleFilled(target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
     }
     else
     {
-        GPU_Rectangle(target, topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, color);
+        GPU_Rectangle(target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
     }
 }
 
@@ -84,111 +88,127 @@ void Renderer_Draw_Rectangle(GPU_Target* target, GPU_Rect rect, SDL_Color color,
 
 void Renderer_Render()
 {
-    GPU_ClearRGB(renderer.renderImage->target, 0, 0, 0);
+    if (game.state == state_play)
+    {
+        GPU_UnsetClip(renderer.renderTarget);
+        GPU_ClearRGB(renderer.renderTarget, 100, 100, 100);
+        Renderer_Clip();
+    }
+    GPU_ClearRGB(renderer.renderTarget, 0, 0, 0);
 
     // ====================
     // CALL RENDER ROUTINES
     // ====================
-    World_Render(renderer.renderImage->target);
+    World_Render(renderer.renderTarget);
     if (game.state == state_editor)
     {
-        Editor_Render(renderer.renderImage->target);
+        Editor_Render(renderer.renderTarget);
     }
 
 
     // =================================
     // ACTUAL RENDERING OF BATCHED ITEMS
     // =================================
-    GPU_PrimitiveBatch(NULL, renderer.renderImage->target, GPU_LINE_LOOP,
+    GPU_PrimitiveBatch(NULL, renderer.renderTarget, GPU_LINE_LOOP,
                        PLAYER_MODEL_COUNT, renderer.playerBatch,
                        0, 0,
                        GPU_BATCH_XY | GPU_BATCH_RGB);
-    GPU_PrimitiveBatch(NULL, renderer.renderImage->target, GPU_LINES, 
+    GPU_PrimitiveBatch(NULL, renderer.renderTarget, GPU_LINES, 
                        world.enemyCount * ENEMY_MODEL_COUNT, renderer.enemiesBatch, 
                        world.enemyCount * 8, renderer.enemiesBatchIndex, 
                        GPU_BATCH_XY | GPU_BATCH_RGB);
-    GPU_PrimitiveBatch(NULL, renderer.renderImage->target, GPU_TRIANGLES, 
+    GPU_PrimitiveBatch(NULL, renderer.renderTarget, GPU_TRIANGLES, 
                        world.playerBulletsCount * BULLET_VERTEX_COUNT, renderer.playerBulletsBatch, 
                        world.playerBulletsCount * BULLET_INDEX_SIZE, renderer.playerBulletsBatchIndex,
                        GPU_BATCH_XY | GPU_BATCH_RGB);
-    GPU_PrimitiveBatch(NULL, renderer.renderImage->target, GPU_TRIANGLES, 
+    GPU_PrimitiveBatch(NULL, renderer.renderTarget, GPU_TRIANGLES, 
                        world.enemyBulletsCount * BULLET_VERTEX_COUNT, renderer.enemyBulletsBatch, 
                        world.enemyBulletsCount * BULLET_INDEX_SIZE, renderer.enemyBulletsBatchIndex,
                        GPU_BATCH_XY | GPU_BATCH_RGB);
 
     // Render Screen Border
     SDL_Color color = { 255, 255, 255, 255 };
-    GPU_Rect border = { -WORLD_PLAY_WIDTH / 2 + 1, -WORLD_PLAY_HEIGHT / 2, WORLD_PLAY_WIDTH - 1, WORLD_PLAY_HEIGHT - 1 };
-    Renderer_Draw_Rectangle(renderer.renderImage->target, border, color, false);
+    float border[8] = { 
+        -WORLD_PLAY_WIDTH / 2, -WORLD_PLAY_HEIGHT / 2,
+        WORLD_PLAY_WIDTH / 2, -WORLD_PLAY_HEIGHT / 2,
+        WORLD_PLAY_WIDTH / 2, WORLD_PLAY_HEIGHT / 2,
+        -WORLD_PLAY_WIDTH / 2, WORLD_PLAY_HEIGHT / 2
+    };
+    unsigned short index[8] = {
+        0, 1,
+        1, 2,
+        2, 3,
+        3, 0
+    };
+    GPU_PrimitiveBatch(NULL, renderer.renderTarget, GPU_LINE_LOOP,
+                       4, border, 8, index, GPU_BATCH_XY);
 
-    // ==================================
-    // GAME TO SCREEN CONVERSION/BLITTING
-    // ==================================
-    GPU_Rect gameRect;
-    gameRect.x =  (float) (renderer.renderCenter.x - renderer.cameraPosition.x);
-    gameRect.y =  (float) (renderer.renderCenter.y - renderer.cameraPosition.y);
-    gameRect.w =  (float) renderer.renderWindowSize.x;
-    gameRect.h =  (float) renderer.renderWindowSize.y;
-
-    Vector screenPosition;
-    screenPosition.x =  ((WINDOW_WIDTH - renderer.renderWindowSize.x) / 2.f);
-    screenPosition.y =  ((WINDOW_HEIGHT - renderer.renderWindowSize.y) / 2.f);
-
-    GPU_ClearRGB(game.gpu_target, 150, 150, 150);
-    GPU_Blit(renderer.renderImage, &gameRect, game.gpu_target, screenPosition.x, screenPosition.y);
-
-    GPU_Flip(game.gpu_target);
+    GPU_Flip(renderer.renderTarget);
 }
 
 
 // =======================
 // Conversion Functions
 // =======================
-
-Vector Renderer_Screen_To_Game_TransformF(float screenX, float screenY, bool isRender)
+Vector Renderer_World_To_Screen_TransformF(float worldX, float worldY, bool isRender)
 {
-    Vector origin = isRender ? renderer.renderCenter : renderer.cameraPosition;
+    Vector cameraCenter;
+    cameraCenter.x = -renderer.renderTarget->camera.x;
+    cameraCenter.y = -renderer.renderTarget->camera.y;
 
-    Vector gamePosition;
-    gamePosition.x = (screenX - origin.x - renderer.renderWindowSize.x / 2) / renderer.zoom;
-    gamePosition.y = (screenY - origin.y - renderer.renderWindowSize.y / 2) / renderer.zoom;
-    return gamePosition;
-}
-
-Vector Renderer_Game_To_Screen_TransformF(float gameX, float gameY, bool isRender)
-{
-    Vector origin = isRender ? renderer.renderCenter : renderer.cameraPosition;
+    Vector origin = isRender ? renderer.renderCenter : cameraCenter;
 
     Vector screenPoint;
-    screenPoint.x = (gameX * renderer.zoom) + origin.x + renderer.renderWindowSize.x / 2;
-    screenPoint.y = (gameY * renderer.zoom) + origin.y + renderer.renderWindowSize.y / 2;
+    screenPoint.x = (worldX * renderer.renderTarget->camera.zoom_x) + origin.x;
+    screenPoint.y = (worldY * renderer.renderTarget->camera.zoom_y) + origin.y;
 
     return screenPoint;
 }
 
-Vector Renderer_Screen_To_Game_TransformV(Vector screenPoint, bool isRender)
+Vector Renderer_World_To_Screen_TransformV(Vector worldPoint, bool isRender)
 {
-    Vector origin = isRender ? renderer.renderCenter : renderer.cameraPosition;
+    Vector cameraCenter;
+    cameraCenter.x = -renderer.renderTarget->camera.x;
+    cameraCenter.y = -renderer.renderTarget->camera.y;
 
-    Vector gamePosition;
-    gamePosition.x =  (screenPoint.x - origin.x - renderer.renderWindowSize.x / 2) / renderer.zoom;
-    gamePosition.y =  (screenPoint.y - origin.y - renderer.renderWindowSize.y / 2) / renderer.zoom;
-    return gamePosition;
-}
-
-Vector Renderer_Game_To_Screen_TransformV(Vector gamePosition, bool isRender)
-{
-    Vector origin = isRender ? renderer.renderCenter : renderer.cameraPosition;
+    Vector origin = isRender ? renderer.renderCenter : cameraCenter;
 
     Vector screenPoint;
-    screenPoint.x = (gamePosition.x * renderer.zoom) + origin.x + renderer.renderWindowSize.x / 2;
-    screenPoint.y = (gamePosition.y * renderer.zoom) + origin.y + renderer.renderWindowSize.y / 2;
+    screenPoint.x = (worldPoint.x * renderer.renderTarget->camera.zoom_x) + origin.x;
+    screenPoint.y = (worldPoint.y * renderer.renderTarget->camera.zoom_y) + origin.y;
 
     return screenPoint;
+}
+
+Vector Renderer_Screen_To_World_TransformF(float screenX, float screenY, bool isRender)
+{
+    Vector cameraCenter;
+    cameraCenter.x = -renderer.renderTarget->camera.x;
+    cameraCenter.y = -renderer.renderTarget->camera.y;
+
+    Vector origin = isRender ? renderer.renderCenter : cameraCenter;
+
+    Vector worldPosition;
+    worldPosition.x = (screenX - cameraCenter.x) / renderer.renderTarget->camera.zoom_x;
+    worldPosition.y = (screenY - cameraCenter.y) / renderer.renderTarget->camera.zoom_y;
+    return worldPosition;
+}
+
+Vector Renderer_Screen_To_World_TransformV(Vector screenPoint, bool isRender)
+{
+    Vector cameraCenter;
+    cameraCenter.x = -renderer.renderTarget->camera.x;
+    cameraCenter.y = -renderer.renderTarget->camera.y;
+
+    Vector origin = isRender ? renderer.renderCenter : cameraCenter;
+
+    Vector worldPosition;
+    worldPosition.x = (screenPoint.x - origin.x) / renderer.renderTarget->camera.zoom_x;
+    worldPosition.y = (screenPoint.y - origin.y) / renderer.renderTarget->camera.zoom_y;
+    return worldPosition;
 }
 
 void Renderer_Destroy()
 {
-    GPU_FreeTarget(renderer.renderImage->target);
-    GPU_FreeImage(renderer.renderImage);
+    GPU_FreeTarget(renderer.renderTarget);
 }

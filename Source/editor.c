@@ -24,7 +24,7 @@ void Editor_Update(float dt)
 {
     VectorInt mousePos;
     Uint32 mouseButtonMask = SDL_GetMouseState(&mousePos.x, &mousePos.y);
-    Vector mouseGamePos = Renderer_Screen_To_Game_TransformF((float) mousePos.x, (float) mousePos.y, false);
+    Vector mouseGamePos = Renderer_Screen_To_World_TransformF((float) mousePos.x, (float) mousePos.y, false);
 
     // SELECT POINTS / ENEMIES
     if (!input.shiftHeld)
@@ -108,16 +108,18 @@ void Editor_Update(float dt)
     {
         if (mouseButtonMask & SDL_BUTTON(SDL_BUTTON_MIDDLE))
         {
-            renderer.cameraPosition.x += mousePos.x - editor.lastMousePos.x;
-            renderer.cameraPosition.y += mousePos.y - editor.lastMousePos.y;
+            renderer.renderTarget->camera.x -= mousePos.x - editor.lastMousePos.x;
+            renderer.renderTarget->camera.y -= mousePos.y - editor.lastMousePos.y;
         }
     }
 
     // ZOOM CAMERA
     if (input.ctrlHeld && input.scroll)
     {
-        renderer.zoom += Sign((float) input.scroll) / 50.f;
-        if (renderer.zoom <= 1 / 100.) renderer.zoom = 1 / 50.f;
+        renderer.renderTarget->camera.zoom_x += Sign((float) input.scroll) / 50.f;
+        if (renderer.renderTarget->camera.zoom_x <= 1 / 100.) renderer.renderTarget->camera.zoom_x = 1 / 50.f;
+        renderer.renderTarget->camera.zoom_y += Sign((float)input.scroll) / 50.f;
+        if (renderer.renderTarget->camera.zoom_y <= 1 / 100.) renderer.renderTarget->camera.zoom_y = 1 / 50.f;
     }
 
     // RESET CAMERA
@@ -182,7 +184,7 @@ void Editor_Select_Edit_Point(VectorInt mousePos, bool isEnemyRoute)
     float minDistance = 50;
     for (int point = 0; point < pathToEdit.waypointCount; point++)
     {
-        Vector screenPoint = Renderer_Game_To_Screen_TransformF( pathToEdit.waypoints[point].x,  pathToEdit.waypoints[point].y, false);
+        Vector screenPoint = Renderer_World_To_Screen_TransformF( pathToEdit.waypoints[point].x,  pathToEdit.waypoints[point].y, false);
         float distance = Distance((float) mousePos.x, (float) mousePos.y, screenPoint.x, screenPoint.y);
         if (distance < 50)
         {
@@ -207,7 +209,7 @@ void Editor_Select_Enemy(VectorInt mousePos)
     float minDistance = 50;
     for (int enemy = 0; enemy < world.enemyCount; enemy++)
     {
-        Vector screenEnemyPos = Renderer_Game_To_Screen_TransformF( world.enemies[enemy].position.x,  world.enemies[enemy].position.y, false);
+        Vector screenEnemyPos = Renderer_World_To_Screen_TransformF( world.enemies[enemy].position.x,  world.enemies[enemy].position.y, false);
         float distance = Distance((float) mousePos.x, (float) mousePos.y, screenEnemyPos.x, screenEnemyPos.y);
         if (distance < 50)
         {
@@ -353,7 +355,7 @@ void Editor_Render_Path(GPU_Target* target)
 
 void Editor_Render_Edit(GPU_Target* target)
 {
-    Vector point = { RENDER_TEXTURE_WIDTH };
+    Vector point = { WORLD_WIDTH };
 
 
     if (editor.pointToEdit >= 0 && !input.shiftHeld)
@@ -369,7 +371,7 @@ void Editor_Render_Edit(GPU_Target* target)
         point = world.enemies[editor.activeEnemy].route.waypoints[editor.pointToEdit];
     }
 
-    if (point.x != RENDER_TEXTURE_WIDTH)
+    if (point.x != WORLD_WIDTH)
     {
         for (int segment = 0; segment < 40; segment++)
         {
@@ -378,7 +380,8 @@ void Editor_Render_Edit(GPU_Target* target)
             float pointY = point.y + 50 / renderer.zoom * sinf(angle);
 
             SDL_Color yellow = { 255, 255, 0, 255 };
-            Renderer_Draw_Point(target,  pointX,  pointY, yellow);
+            //Renderer_Draw_Point(target,  pointX,  pointY, yellow);
+            GPU_Pixel(target, pointX, pointY, yellow);
         }
     }
 

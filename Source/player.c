@@ -18,7 +18,8 @@ void Player_Initialize()
     player.velocity.x = 0;
     player.velocity.y = 0;
 
-    player.reloadTime = 0.05f;
+    player.fire = true;
+    player.reloadTime = 0.1f;
 
     player.body.position = player.position;
     player.body.radius = 1;
@@ -60,17 +61,23 @@ void Player_Update(Player* player, float dt)
 
     if (input.shoot)
     {
-        player->fireTimer += dt;
-        player->fire = player->fireTimer >= player->reloadTime;
+        if (!player->fire)
+        {
+            player->fireTimer += dt;
+            player->fire = player->fireTimer >= player->reloadTime;
+        }
 
         if (player->fire)
         {
-            Vector bulletVelocity0 = { 0, -300 };
-            Vector bulletVelocity1 = { 50, -300 };
-            Vector bulletVelocity2 = { -50, -300 };
-            Bullet_Create(player->position, bulletVelocity0, 2, 4, team_player);
-            Bullet_Create(player->position, bulletVelocity1, 2, 4, team_player);
-            Bullet_Create(player->position, bulletVelocity2, 2, 4, team_player);
+            Vector velocity;
+            for (int shot = -1; shot <= 1; shot++)
+            {
+                float angle = -shot / 18.f * 2 * F_PI - F_PI / 2;
+                velocity.x = cosf(angle) * 400;
+                velocity.y = sinf(angle) * 400;
+
+                Bullet_Create(player->position, velocity, 4, 6, team_player);
+            }
 
             player->fire = false;
             player->fireTimer = 0;
@@ -79,15 +86,16 @@ void Player_Update(Player* player, float dt)
     else
     {
         player->fire = true;
+        player->fireTimer = 0;
     }
+
+    player->body.position = player->position;
 
     for (int point = 0; point < PLAYER_MODEL_COUNT; point++)
     {
         player->render[point].x =  (player->position.x + player->model[point].x);
         player->render[point].y =  (player->position.y + player->model[point].y);
     }
-
-    player->body.position = player->position;
 }
 
 void Player_Render(GPU_Target* target, Player* player)
@@ -95,9 +103,8 @@ void Player_Render(GPU_Target* target, Player* player)
     SDL_Color color = { 255, 255, 0, 255 };
     for (int vertex = 0; vertex < PLAYER_MODEL_COUNT; vertex++)
     {
-        Vector renderPoint = Renderer_Game_To_Screen_TransformV(player->render[vertex], true);
-        renderer.playerBatch[vertex * PLAYER_VERTEX_SIZE + 0] = renderPoint.x;
-        renderer.playerBatch[vertex * PLAYER_VERTEX_SIZE + 1] = renderPoint.y;
+        renderer.playerBatch[vertex * PLAYER_VERTEX_SIZE + 0] = player->render[vertex].x;
+        renderer.playerBatch[vertex * PLAYER_VERTEX_SIZE + 1] = player->render[vertex].y;
         renderer.playerBatch[vertex * PLAYER_VERTEX_SIZE + 2] = color.r / 255.f;
         renderer.playerBatch[vertex * PLAYER_VERTEX_SIZE + 3] = color.g / 255.f;
         renderer.playerBatch[vertex * PLAYER_VERTEX_SIZE + 4] = color.b / 255.f;

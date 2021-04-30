@@ -10,8 +10,11 @@
 #define WORLD_MAX_ENEMY_BULLETS 10000
 #define WORLD_MAX_ENEMIES 1000
 
-#define WORLD_PLAY_WIDTH 400
-#define WORLD_PLAY_HEIGHT 590
+#define WORLD_WIDTH    1600
+#define WORLD_HEIGHT   1200
+
+#define WORLD_PLAY_WIDTH 401
+#define WORLD_PLAY_HEIGHT 591
 
 typedef enum { entities_playerBullets, entities_enemies, entities_enemyBullets } EntityType;
 

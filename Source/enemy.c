@@ -75,18 +75,18 @@ void Enemy_Update(Enemy* enemy, float dt)
         if (!enemy->fire)
         {
             enemy->fireTimer += dt;
-            enemy->fire = enemy->fireTimer > 0.05;
+            enemy->fire = enemy->fireTimer > 0.1;
         }
         if (enemy->fire)
         {
             Vector velocity;
-            for (int shot = 0; shot < 30; shot++)
+            for (int shot = 0; shot < 10; shot++)
             {
-                float angle = shot / 30.f * 2 * F_PI;
-                velocity.x = cosf(angle) * 70;
-                velocity.y = sinf(angle) * 70;
+                float angle = shot / 10.f * 2 * F_PI;
+                velocity.x = cosf(angle) * 100;
+                velocity.y = sinf(angle) * 100;
 
-                Bullet_Create(enemy->position, velocity, 2, 1, team_enemy);
+                Bullet_Create(enemy->position, velocity, 10, 5, team_enemy);
             }
 
             enemy->fire = false;
@@ -98,7 +98,7 @@ void Enemy_Update(Enemy* enemy, float dt)
     {
         if (enemy->edit)
         {
-            enemy->t += input.scroll / 100;
+            enemy->t += input.scroll / 100.f;
         }
 
         if (enemy->t < 0)
@@ -115,13 +115,13 @@ void Enemy_Update(Enemy* enemy, float dt)
     enemy->position.x = pointOnCurve.x;
     enemy->position.y = pointOnCurve.y;
 
+    enemy->body.position = enemy->position;
+
     for (int point = 0; point < ENEMY_MODEL_COUNT; point++)
     {
         enemy->render[point].x = (enemy->position.x + enemy->model[point].x);
         enemy->render[point].y = (enemy->position.y + enemy->model[point].y);
     }
-
-    enemy->body.position = enemy->position;
 }
 
 void Enemy_Render(GPU_Target* target, Enemy* enemy)
@@ -135,9 +135,8 @@ void Enemy_Render(GPU_Target* target, Enemy* enemy)
     SDL_Color color = enemy->edit ? yellow : white;
     for (int vertex = 0; vertex < ENEMY_MODEL_COUNT; vertex++)
     {
-        Vector renderPoint = Renderer_Game_To_Screen_TransformV(enemy->render[vertex], true);
-        renderer.enemiesBatch[enemy->id * ENEMY_STRIDE + vertex * ENEMY_VERTEX_SIZE + 0] = renderPoint.x;
-        renderer.enemiesBatch[enemy->id * ENEMY_STRIDE + vertex * ENEMY_VERTEX_SIZE + 1] = renderPoint.y;
+        renderer.enemiesBatch[enemy->id * ENEMY_STRIDE + vertex * ENEMY_VERTEX_SIZE + 0] = enemy->render[vertex].x;
+        renderer.enemiesBatch[enemy->id * ENEMY_STRIDE + vertex * ENEMY_VERTEX_SIZE + 1] = enemy->render[vertex].y;
         renderer.enemiesBatch[enemy->id * ENEMY_STRIDE + vertex * ENEMY_VERTEX_SIZE + 2] = color.r / 255.f;
         renderer.enemiesBatch[enemy->id * ENEMY_STRIDE + vertex * ENEMY_VERTEX_SIZE + 3] = color.g / 255.f;
         renderer.enemiesBatch[enemy->id * ENEMY_STRIDE + vertex * ENEMY_VERTEX_SIZE + 4] = color.b / 255.f;

@@ -1,6 +1,7 @@
 #include "world.h"
 
 #include <math.h>
+#include <stdlib.h>
 
 #include "globals.h"
 
@@ -19,6 +20,15 @@ void Bullet_Create(Vector position, Vector velocity, float radius, float bodyRad
     bullet.radius = radius;
     bullet.body.position = position;
     bullet.body.radius = bodyRadius;
+
+    bullet.model[0].x = 0;       bullet.model[0].y = -radius;
+    bullet.model[1].x = radius;  bullet.model[1].y = 0;
+    bullet.model[2].x = 0;       bullet.model[2].y = radius;
+    bullet.model[3].x = -radius; bullet.model[3].y = 0;
+
+    bullet.color.r = rand() % 50 + 155;
+    bullet.color.g = rand() % 100 + 85;
+    bullet.color.b = rand() % 150 + 75;
 
     int maxBullets = bullet.team == team_player ? WORLD_MAX_PLAYER_BULLETS : WORLD_MAX_ENEMY_BULLETS;
 
@@ -56,34 +66,23 @@ void Bullet_Update(Bullet* bullet, float dt)
     }
 
     bullet->body.position = bullet->position;
+
+    for (int point = 0; point < BULLET_VERTEX_COUNT; point++)
+    {
+        bullet->render[point].x = (bullet->position.x + bullet->model[point].x);
+        bullet->render[point].y = (bullet->position.y + bullet->model[point].y);
+    }
 }
 
 void Bullet_Render(GPU_Target* target, Bullet* bullet)
 {
-    SDL_Color color;
-    color.r = (int) bullet->velocity.x / 3;
-    color.g = (int) bullet->velocity.y / 2;
-    color.b = (int) bullet->position.x / 4;
-
-    Vector renderPoint = Renderer_Game_To_Screen_TransformV(bullet->position, true);
-    Vector renderRect[BULLET_VERTEX_COUNT];
-    renderRect[0].x = renderPoint.x - bullet->radius;
-    renderRect[0].y = renderPoint.y - bullet->radius;
-    renderRect[1].x = renderPoint.x + bullet->radius;
-    renderRect[1].y = renderPoint.y - bullet->radius;
-    renderRect[2].x = renderPoint.x + bullet->radius;
-    renderRect[2].y = renderPoint.y + bullet->radius;
-    renderRect[3].x = renderPoint.x - bullet->radius;
-    renderRect[3].y = renderPoint.y + bullet->radius;
-
     float* teamBulletsBatch = bullet->team == team_player ? renderer.playerBulletsBatch : renderer.enemyBulletsBatch;
     for (int point = 0; point < BULLET_VERTEX_COUNT; point++)
     {
-        teamBulletsBatch[bullet->id * BULLET_STRIDE + point * BULLET_VERTEX_SIZE + 0] = renderRect[point].x;
-        teamBulletsBatch[bullet->id * BULLET_STRIDE + point * BULLET_VERTEX_SIZE + 1] = renderRect[point].y;
-        teamBulletsBatch[bullet->id * BULLET_STRIDE + point * BULLET_VERTEX_SIZE + 2] = color.r / 255.f;
-        teamBulletsBatch[bullet->id * BULLET_STRIDE + point * BULLET_VERTEX_SIZE + 3] = color.g / 255.f;
-        teamBulletsBatch[bullet->id * BULLET_STRIDE + point * BULLET_VERTEX_SIZE + 4] = color.b / 255.f;
+        teamBulletsBatch[bullet->id * BULLET_STRIDE + point * BULLET_VERTEX_SIZE + 0] = bullet->render[point].x;
+        teamBulletsBatch[bullet->id * BULLET_STRIDE + point * BULLET_VERTEX_SIZE + 1] = bullet->render[point].y;
+        teamBulletsBatch[bullet->id * BULLET_STRIDE + point * BULLET_VERTEX_SIZE + 2] = bullet->color.r / 255.f;
+        teamBulletsBatch[bullet->id * BULLET_STRIDE + point * BULLET_VERTEX_SIZE + 3] = bullet->color.g / 255.f;
+        teamBulletsBatch[bullet->id * BULLET_STRIDE + point * BULLET_VERTEX_SIZE + 4] = bullet->color.b / 255.f;
     }
-
 }

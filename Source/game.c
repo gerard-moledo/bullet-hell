@@ -12,16 +12,6 @@ Game game = { 0 };
 void Game_Initialize()
 {
     SDL_Init(SDL_INIT_VIDEO);
-    
-    game.window = SDL_CreateWindow("Bullet Hell", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL);
-    
-    GPU_SetInitWindow(SDL_GetWindowID(game.window));
-
-#ifdef __EMSCRIPTEN
-    GPU_SetPreInitFlags(GPU_INIT_DISABLE_VSYNC);
-#endif
-
-    game.gpu_target = GPU_Init(0, 0, 0);
 
     game.previousFrameTime = clock();
     game.running = true;
@@ -57,7 +47,7 @@ void Game_Loop()
 #endif
 
     clock_t currentTime = clock();
-    float elapsedTime = (float) (currentTime -  game.previousFrameTime) / CLOCKS_PER_SEC;
+    float elapsedTime = (float) (currentTime - game.previousFrameTime) / CLOCKS_PER_SEC;
     game.previousFrameTime = currentTime;
     game.stackedTime += elapsedTime;
     game.frames++;
@@ -104,4 +94,6 @@ void Game_Update_State()
     renderer.renderWindowSize.x = game.state == state_play ? WORLD_PLAY_WIDTH : WINDOW_WIDTH;
     renderer.renderWindowSize.y = game.state == state_play ? WORLD_PLAY_HEIGHT: WINDOW_HEIGHT;
     Renderer_Reset_Camera();
+
+    GPU_UnsetClip(renderer.renderTarget);
 }

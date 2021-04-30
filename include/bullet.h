@@ -22,6 +22,10 @@ typedef struct {
     float radius;
 
     BodyCircle body;
+
+    Vector model[BULLET_VERTEX_COUNT];
+    Vector render[BULLET_VERTEX_COUNT];
+    SDL_Color color;
 } Bullet;
 
 void Bullet_Create(Vector position, Vector velocity, float radius, float bodyRadius, Team team);
