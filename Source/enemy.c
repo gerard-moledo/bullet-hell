@@ -8,6 +8,7 @@
 int Enemy_Initialize(Path route)
 {
     Enemy enemy;
+    enemy.id = world.enemyCount++;
 
     enemy.position = route.waypoints[0];
 
@@ -22,23 +23,30 @@ int Enemy_Initialize(Path route)
 
     Path_Duration(&enemy.route);
 
-    Vector model[5] = {
+    Vector model[ENEMY_MODEL_COUNT] = {
         {0, 10},
         {-10, -10},
         {0, -5},
-        {10, -10},
-        {0, 10}
+        {10, -10}
     };
-    for (int point = 0; point < 5; point++)
+    for (int point = 0; point < ENEMY_MODEL_COUNT; point++)
     {
         enemy.model[point] = model[point];
     }
+    renderer.enemiesBatchIndex[enemy.id * ENEMY_INDEX_SIZE + 0] = enemy.id * ENEMY_MODEL_COUNT + 0;
+    renderer.enemiesBatchIndex[enemy.id * ENEMY_INDEX_SIZE + 1] = enemy.id * ENEMY_MODEL_COUNT + 1;
+    renderer.enemiesBatchIndex[enemy.id * ENEMY_INDEX_SIZE + 2] = enemy.id * ENEMY_MODEL_COUNT + 1;
+    renderer.enemiesBatchIndex[enemy.id * ENEMY_INDEX_SIZE + 3] = enemy.id * ENEMY_MODEL_COUNT + 2;
+    renderer.enemiesBatchIndex[enemy.id * ENEMY_INDEX_SIZE + 4] = enemy.id * ENEMY_MODEL_COUNT + 2;
+    renderer.enemiesBatchIndex[enemy.id * ENEMY_INDEX_SIZE + 5] = enemy.id * ENEMY_MODEL_COUNT + 3;
+    renderer.enemiesBatchIndex[enemy.id * ENEMY_INDEX_SIZE + 6] = enemy.id * ENEMY_MODEL_COUNT + 3;
+    renderer.enemiesBatchIndex[enemy.id * ENEMY_INDEX_SIZE + 7] = enemy.id * ENEMY_MODEL_COUNT + 0;
+
 
     Enemy_Set_Route_Render(&enemy);
 
     enemy.edit = true;
 
-    enemy.id = world.enemyCount++;
     world.enemies[enemy.id] = enemy;
 
     return enemy.id;
@@ -67,7 +75,7 @@ void Enemy_Update(Enemy* enemy, float dt)
         if (!enemy->fire)
         {
             enemy->fireTimer += dt;
-            enemy->fire = enemy->fireTimer > 0.2;
+            enemy->fire = enemy->fireTimer > 0.05;
         }
         if (enemy->fire)
         {
@@ -78,7 +86,7 @@ void Enemy_Update(Enemy* enemy, float dt)
                 velocity.x = cosf(angle) * 70;
                 velocity.y = sinf(angle) * 70;
 
-                Bullet_Create(enemy->position, velocity, 6, 2, team_enemy);
+                Bullet_Create(enemy->position, velocity, 2, 1, team_enemy);
             }
 
             enemy->fire = false;
@@ -109,8 +117,8 @@ void Enemy_Update(Enemy* enemy, float dt)
 
     for (int point = 0; point < ENEMY_MODEL_COUNT; point++)
     {
-        enemy->render[point * 2] =  (enemy->position.x + enemy->model[point].x);
-        enemy->render[point * 2 + 1] =  (enemy->position.y + enemy->model[point].y);
+        enemy->render[point].x = (enemy->position.x + enemy->model[point].x);
+        enemy->render[point].y = (enemy->position.y + enemy->model[point].y);
     }
 
     enemy->body.position = enemy->position;
@@ -125,8 +133,16 @@ void Enemy_Render(GPU_Target* target, Enemy* enemy)
     
     // Draws Ship
     SDL_Color color = enemy->edit ? yellow : white;
-    Renderer_Draw_Lines(target, enemy->render, ENEMY_MODEL_COUNT * 2, color);
-    
+    for (int vertex = 0; vertex < ENEMY_MODEL_COUNT; vertex++)
+    {
+        Vector renderPoint = Renderer_Game_To_Screen_TransformV(enemy->render[vertex], true);
+        renderer.enemiesBatch[enemy->id * ENEMY_STRIDE + vertex * ENEMY_VERTEX_SIZE + 0] = renderPoint.x;
+        renderer.enemiesBatch[enemy->id * ENEMY_STRIDE + vertex * ENEMY_VERTEX_SIZE + 1] = renderPoint.y;
+        renderer.enemiesBatch[enemy->id * ENEMY_STRIDE + vertex * ENEMY_VERTEX_SIZE + 2] = color.r / 255.f;
+        renderer.enemiesBatch[enemy->id * ENEMY_STRIDE + vertex * ENEMY_VERTEX_SIZE + 3] = color.g / 255.f;
+        renderer.enemiesBatch[enemy->id * ENEMY_STRIDE + vertex * ENEMY_VERTEX_SIZE + 4] = color.b / 255.f;
+    }
+
     if (game.state == state_editor)
     {
         // Draw First Control Point
@@ -140,17 +156,6 @@ void Enemy_Render(GPU_Target* target, Enemy* enemy)
         // Draw Last Control Point
         color = enemy->edit ? green : white;
         Renderer_Draw_Point(target, enemy->route.waypoints[enemy->route.waypointCount - 1].x, enemy->route.waypoints[enemy->route.waypointCount - 1].y, color);
-    }
-
-    // Draw Collision Shape
-    color = red;
-    for (int segment = 0; segment < 40; segment++)
-    {
-        float angle = segment / 40.f * 2 * F_PI;
-        float pointX = enemy->position.x + enemy->body.radius * cosf(angle);
-        float pointY = enemy->position.y + enemy->body.radius * sinf(angle);
-
-        Renderer_Draw_Point(target, pointX, pointY, color);
     }
 }
 

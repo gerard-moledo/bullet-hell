@@ -9,7 +9,10 @@
 #include "util.h"
 
 #define ROUTE_RENDER_COUNT 100
-#define ENEMY_MODEL_COUNT 5
+#define ENEMY_MODEL_COUNT 4
+#define ENEMY_VERTEX_SIZE 5
+#define ENEMY_INDEX_SIZE 8
+#define ENEMY_STRIDE (ENEMY_MODEL_COUNT * ENEMY_VERTEX_SIZE)
 
 typedef struct {
     int id;
@@ -27,7 +30,7 @@ typedef struct {
     Vector routeRender[ROUTE_RENDER_COUNT];
 
     Vector model[ENEMY_MODEL_COUNT];
-    float render[ENEMY_MODEL_COUNT * 2];
+    Vector render[ENEMY_MODEL_COUNT];
 
     bool edit;
 } Enemy;

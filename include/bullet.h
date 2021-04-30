@@ -5,7 +5,13 @@
 
 #include "util.h"
 
+#define BULLET_VERTEX_COUNT 4
+#define BULLET_VERTEX_SIZE 5
+#define BULLET_INDEX_SIZE 6
+#define BULLET_STRIDE (BULLET_VERTEX_COUNT * BULLET_VERTEX_SIZE)
+
 typedef enum { team_player, team_enemy } Team;
+
 
 typedef struct {
     int id;
@@ -16,8 +22,6 @@ typedef struct {
     float radius;
 
     BodyCircle body;
-
-    Vector model[5];
 } Bullet;
 
 void Bullet_Create(Vector position, Vector velocity, float radius, float bodyRadius, Team team);

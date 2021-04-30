@@ -20,6 +20,8 @@ typedef struct {
 
     bool running;
     clock_t previousFrameTime;
+    float stackedTime;
+    int frames;
 
     bool pause;
     State state;

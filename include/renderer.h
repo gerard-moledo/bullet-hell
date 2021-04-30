@@ -15,6 +15,17 @@ typedef struct {
 
     VectorInt renderWindowSize;
 
+    float playerBatch[PLAYER_STRIDE];
+
+    float enemiesBatch[WORLD_MAX_ENEMIES * ENEMY_STRIDE];
+    unsigned short enemiesBatchIndex[WORLD_MAX_ENEMIES * ENEMY_INDEX_SIZE];
+
+    float playerBulletsBatch[WORLD_MAX_PLAYER_BULLETS * BULLET_STRIDE];
+    unsigned short playerBulletsBatchIndex[WORLD_MAX_PLAYER_BULLETS * BULLET_INDEX_SIZE];
+
+    float enemyBulletsBatch[WORLD_MAX_ENEMY_BULLETS * BULLET_STRIDE];
+    unsigned short enemyBulletsBatchIndex[WORLD_MAX_ENEMY_BULLETS * BULLET_INDEX_SIZE];
+
     Vector renderCenter;
     Vector cameraPosition;
     float zoom;

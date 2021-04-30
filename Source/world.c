@@ -125,17 +125,14 @@ void World_Physics_Update()
 
 void World_Render(GPU_Target* target)
 {
+    if (world.player.exists)
+    {
+        Player_Render(target, &world.player);
+    }
+
     for (int bullet = 0; bullet < world.playerBulletsCount; bullet++)
     {
         Bullet_Render(target, &world.playerBullets[bullet]);
-    }
-
-    for (int enemy = 0; enemy < world.enemyCount; enemy++)
-    {
-        if (world.enemies[enemy].id != -1)
-        {
-                Enemy_Render(target, &world.enemies[enemy]);
-        }
     }
 
     for (int bullet = 0; bullet < world.enemyBulletsCount; bullet++)
@@ -143,13 +140,8 @@ void World_Render(GPU_Target* target)
         Bullet_Render(target, &world.enemyBullets[bullet]);
     }
 
-    if (world.player.exists)
+    for (int enemy = 0; enemy < world.enemyCount; enemy++)
     {
-        Player_Render(target, &world.player);
+        Enemy_Render(target, &world.enemies[enemy]);
     }
-
-    // Render Screen Border
-    SDL_Color color = { 255, 255, 255, 255 };
-    GPU_Rect border = { -WORLD_PLAY_WIDTH / 2 + 1, -WORLD_PLAY_HEIGHT / 2, WORLD_PLAY_WIDTH - 1, WORLD_PLAY_HEIGHT - 1 };
-    Renderer_Draw_Rectangle(target, border, color, false);
 }

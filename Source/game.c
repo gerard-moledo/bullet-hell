@@ -59,10 +59,15 @@ void Game_Loop()
     clock_t currentTime = clock();
     float elapsedTime = (float) (currentTime -  game.previousFrameTime) / CLOCKS_PER_SEC;
     game.previousFrameTime = currentTime;
+    game.stackedTime += elapsedTime;
+    game.frames++;
+    if (game.stackedTime > 1)
+    {
+        printf("FPS: %d  EnemyBullets: %d  PlayerBullets: %d\n", game.frames, world.enemyBulletsCount, world.playerBulletsCount);
+        game.frames = 1;
+        game.stackedTime = 0;
+    }
 
-#ifndef __EMSCRIPTEN__
-    printf("Bullets: %d, Elapsed Time: %f\n", world.enemyBulletsCount, elapsedTime);
-#endif
 
     Input_Refresh();
     Input_Poll_Events();

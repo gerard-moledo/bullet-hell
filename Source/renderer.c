@@ -86,17 +86,44 @@ void Renderer_Render()
 {
     GPU_ClearRGB(renderer.renderImage->target, 0, 0, 0);
 
-    // RENDER
+    // ====================
+    // CALL RENDER ROUTINES
+    // ====================
     World_Render(renderer.renderImage->target);
-
     if (game.state == state_editor)
     {
         Editor_Render(renderer.renderImage->target);
     }
 
-    GPU_ClearRGB(game.gpu_target, 150, 150, 150);
 
-    // Render to screen
+    // =================================
+    // ACTUAL RENDERING OF BATCHED ITEMS
+    // =================================
+    GPU_PrimitiveBatch(NULL, renderer.renderImage->target, GPU_LINE_LOOP,
+                       PLAYER_MODEL_COUNT, renderer.playerBatch,
+                       0, 0,
+                       GPU_BATCH_XY | GPU_BATCH_RGB);
+    GPU_PrimitiveBatch(NULL, renderer.renderImage->target, GPU_LINES, 
+                       world.enemyCount * ENEMY_MODEL_COUNT, renderer.enemiesBatch, 
+                       world.enemyCount * 8, renderer.enemiesBatchIndex, 
+                       GPU_BATCH_XY | GPU_BATCH_RGB);
+    GPU_PrimitiveBatch(NULL, renderer.renderImage->target, GPU_TRIANGLES, 
+                       world.playerBulletsCount * BULLET_VERTEX_COUNT, renderer.playerBulletsBatch, 
+                       world.playerBulletsCount * BULLET_INDEX_SIZE, renderer.playerBulletsBatchIndex,
+                       GPU_BATCH_XY | GPU_BATCH_RGB);
+    GPU_PrimitiveBatch(NULL, renderer.renderImage->target, GPU_TRIANGLES, 
+                       world.enemyBulletsCount * BULLET_VERTEX_COUNT, renderer.enemyBulletsBatch, 
+                       world.enemyBulletsCount * BULLET_INDEX_SIZE, renderer.enemyBulletsBatchIndex,
+                       GPU_BATCH_XY | GPU_BATCH_RGB);
+
+    // Render Screen Border
+    SDL_Color color = { 255, 255, 255, 255 };
+    GPU_Rect border = { -WORLD_PLAY_WIDTH / 2 + 1, -WORLD_PLAY_HEIGHT / 2, WORLD_PLAY_WIDTH - 1, WORLD_PLAY_HEIGHT - 1 };
+    Renderer_Draw_Rectangle(renderer.renderImage->target, border, color, false);
+
+    // ==================================
+    // GAME TO SCREEN CONVERSION/BLITTING
+    // ==================================
     GPU_Rect gameRect;
     gameRect.x =  (float) (renderer.renderCenter.x - renderer.cameraPosition.x);
     gameRect.y =  (float) (renderer.renderCenter.y - renderer.cameraPosition.y);
@@ -107,9 +134,8 @@ void Renderer_Render()
     screenPosition.x =  ((WINDOW_WIDTH - renderer.renderWindowSize.x) / 2.f);
     screenPosition.y =  ((WINDOW_HEIGHT - renderer.renderWindowSize.y) / 2.f);
 
-    GPU_Rect renderRect = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
+    GPU_ClearRGB(game.gpu_target, 150, 150, 150);
     GPU_Blit(renderer.renderImage, &gameRect, game.gpu_target, screenPosition.x, screenPosition.y);
-
 
     GPU_Flip(game.gpu_target);
 }

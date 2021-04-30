@@ -18,19 +18,18 @@ void Player_Initialize()
     player.velocity.x = 0;
     player.velocity.y = 0;
 
-    player.reloadTime = 0.1f;
+    player.reloadTime = 0.05f;
 
     player.body.position = player.position;
     player.body.radius = 1;
 
-    Vector model[5] = {
+    Vector model[PLAYER_MODEL_COUNT] = {
         {0, -10},
         {-10, 10},
         {0, 5},
-        {10, 10},
-        {0, -10}
+        {10, 10}
     };
-    for (int point = 0; point < 5; point++)
+    for (int point = 0; point < PLAYER_MODEL_COUNT; point++)
     {
         player.model[point] = model[point];
     }
@@ -66,8 +65,12 @@ void Player_Update(Player* player, float dt)
 
         if (player->fire)
         {
-            Vector bulletVelocity = {0, -500};
-            Bullet_Create(player->position, bulletVelocity, 4, 6, team_player);
+            Vector bulletVelocity0 = { 0, -300 };
+            Vector bulletVelocity1 = { 50, -300 };
+            Vector bulletVelocity2 = { -50, -300 };
+            Bullet_Create(player->position, bulletVelocity0, 2, 4, team_player);
+            Bullet_Create(player->position, bulletVelocity1, 2, 4, team_player);
+            Bullet_Create(player->position, bulletVelocity2, 2, 4, team_player);
 
             player->fire = false;
             player->fireTimer = 0;
@@ -80,8 +83,8 @@ void Player_Update(Player* player, float dt)
 
     for (int point = 0; point < PLAYER_MODEL_COUNT; point++)
     {
-        player->render[point*2] =  (player->position.x + player->model[point].x);
-        player->render[point*2 + 1] =  (player->position.y + player->model[point].y);
+        player->render[point].x =  (player->position.x + player->model[point].x);
+        player->render[point].y =  (player->position.y + player->model[point].y);
     }
 
     player->body.position = player->position;
@@ -89,18 +92,16 @@ void Player_Update(Player* player, float dt)
 
 void Player_Render(GPU_Target* target, Player* player)
 {
-    //for (int segment = 0; segment < 80; segment++)
-    //{
-    //    float angle = segment / 80.f * 2 * F_PI;
-    //    float pointX = player->position.x + player->body.radius * cosf(angle);
-    //    float pointY = player->position.y + player->body.radius * sinf(angle);
-
-    //    SDL_Color color = { 255, 0, 0, 255 };
-    //    Renderer_Draw_Point(target, pointX, pointY, color);
-    //}
-
-    SDL_Color color = { 255, 255, 255, 255 };
-    Renderer_Draw_Lines(target, player->render, PLAYER_MODEL_COUNT * 2, color);
+    SDL_Color color = { 255, 255, 0, 255 };
+    for (int vertex = 0; vertex < PLAYER_MODEL_COUNT; vertex++)
+    {
+        Vector renderPoint = Renderer_Game_To_Screen_TransformV(player->render[vertex], true);
+        renderer.playerBatch[vertex * PLAYER_VERTEX_SIZE + 0] = renderPoint.x;
+        renderer.playerBatch[vertex * PLAYER_VERTEX_SIZE + 1] = renderPoint.y;
+        renderer.playerBatch[vertex * PLAYER_VERTEX_SIZE + 2] = color.r / 255.f;
+        renderer.playerBatch[vertex * PLAYER_VERTEX_SIZE + 3] = color.g / 255.f;
+        renderer.playerBatch[vertex * PLAYER_VERTEX_SIZE + 4] = color.b / 255.f;
+    }
 }
 
 Uint32 Player_Reload(Uint32 interval, void* param)

@@ -4,6 +4,57 @@
 #include <math.h>
 #include <string.h>
 
+int Round_To_Int(float num)
+{
+    return (int) (num < 0 ? num - 0.5 : num + 0.5);
+}
+
+int Sign(float num)
+{
+    return num > 0 ? 1 : -1;
+}
+
+float Distance(float x1, float y1, float x2, float y2)
+{
+    return sqrtf((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+}
+
+float DistanceI(int x1, int y1, int x2, int y2)
+{
+    return Distance((float) x1, (float) y1, (float) x2, (float) y2);
+}
+
+float Lerp(float start, float finish, float t)
+{
+    return start + t * (finish - start);
+}
+
+float Map(float s0, float s1, float f0, float f1, float t)
+{
+    return f0 + (t - s0) * (f1 - f0) / (s1 - s0);
+}
+
+
+
+Vector Vector_Add(Vector v1, Vector v2)
+{
+    Vector result;
+    result.x = v1.x + v2.x;
+    result.y = v1.y + v2.y;
+    return result;
+}
+
+
+Vector Vector_Subtract(Vector v1, Vector v2)
+{
+    Vector result;
+    result.x = v1.x - v2.x;
+    result.y = v1.y - v2.y;
+    return result;
+}
+
+
+
 Path Path_Initialize(int waypointCount, Vector waypoints[], float durations[])
 {
     Path path;
@@ -53,35 +104,6 @@ float Path_Duration(Path* path)
     return path->duration;
 }
 
-int Round_To_Int(float num)
-{
-    return (int) (num < 0 ? num - 0.5 : num + 0.5);
-}
-
-int Sign(float num)
-{
-    return num > 0 ? 1 : -1;
-}
-
-float Distance(float x1, float y1, float x2, float y2)
-{
-    return sqrtf((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-}
-
-float DistanceI(int x1, int y1, int x2, int y2)
-{
-    return Distance((float) x1, (float) y1, (float) x2, (float) y2);
-}
-
-float Lerp(float start, float finish, float t)
-{
-    return start + t * (finish - start);
-}
-
-float Map(float s0, float s1, float f0, float f1, float t)
-{
-    return f0 + (t - s0) * (f1 - f0) / (s1 - s0);
-}
 
 float Hermite(float p0, float p1, float p2, float p3, float t)
 {

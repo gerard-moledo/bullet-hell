@@ -6,7 +6,9 @@
 
 #include "util.h"
 
-#define PLAYER_MODEL_COUNT 5
+#define PLAYER_MODEL_COUNT 4
+#define PLAYER_VERTEX_SIZE 5
+#define PLAYER_STRIDE (ENEMY_MODEL_COUNT * ENEMY_VERTEX_SIZE)
 
 typedef struct {
     bool exists;
@@ -23,7 +25,7 @@ typedef struct {
     float reloadTime;
 
     Vector model[PLAYER_MODEL_COUNT];
-    float render[PLAYER_MODEL_COUNT * 2];
+    Vector render[PLAYER_MODEL_COUNT];
 } Player;
 
 void Player_Initialize();
