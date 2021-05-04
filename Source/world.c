@@ -4,10 +4,25 @@
 
 #include "globals.h"
 
-World world = {0};
+World world = { 0 };
 
 void World_Initialize()
 {
+    for (int entity = 0; entity < WORLD_MAX_ENEMY_BULLETS; entity++)
+    {
+        if (entity < WORLD_MAX_ENEMIES)
+        {
+            world.enemies[entity].id = -1;
+        }
+        
+        if (entity < WORLD_MAX_PLAYER_BULLETS)
+        {
+            world.playerBullets[entity].id = -1;
+        }
+
+        world.enemyBullets[entity].id = -1;
+    }
+
     Player_Initialize();
 }
 
@@ -16,58 +31,80 @@ void World_Clean()
     // ===================================
     // CLEAN PLAYER BULLETS
     // ===================================
-    for (int index = 0; index < world.playerBulletsCount; index++)
+    int initialPlayerBulletsCount = world.playerBulletsCount;
+    world.playerBulletsCount = 0;
+    for (int index = 0; index < initialPlayerBulletsCount; index++)
     {
         if (world.playerBullets[index].id == -1)
         {
-            for (int lastEntity = world.playerBulletsCount - 1; lastEntity > index; lastEntity--)
+            for (int lastEntity = initialPlayerBulletsCount - 1; lastEntity > index; lastEntity--)
             {
                 if (world.playerBullets[lastEntity].id != -1)
                 {
-                    world.playerBullets[lastEntity].id = index;
                     world.playerBullets[index] = world.playerBullets[lastEntity];
+                    world.playerBullets[index].id = index;
+                    world.playerBullets[lastEntity].id = -1;
+                    world.playerBulletsCount++;
                     break;
                 }
             }
-            world.playerBulletsCount--;
+            //world.playerBulletsCount--;
+        }
+        else
+        {
+            world.playerBulletsCount++;
         }
     }
     // ===================================
     // CLEAN ENEMIES
     // ===================================
-    for (int index = 0; index < world.enemyCount; index++)
+    int initialEnemyCount = world.enemyCount;
+    world.enemyCount = 0;
+    for (int index = 0; index < initialEnemyCount; index++)
     {
         if (world.enemies[index].id == -1)
         {
-            for (int lastEntity = world.enemyCount - 1; lastEntity > index; lastEntity--)
+            for (int lastEntity = initialEnemyCount - 1; lastEntity > index; lastEntity--)
             {
                 if (world.enemies[lastEntity].id != -1)
                 {
-                    world.enemies[lastEntity].id = index;
                     world.enemies[index] = world.enemies[lastEntity];
+                    world.enemies[index].id = index;
+                    world.enemies[lastEntity].id = -1;
+                    world.enemyCount++;
                     break;
                 }
             }
-            world.enemyCount--;
+        }
+        else
+        {
+            world.enemyCount++;
         }
     }
     // ===================================
     // CLEAN ENEMY BULLETS
     // ===================================
-    for (int index = 0; index < world.enemyBulletsCount; index++)
+    int initialEnemyBulletsCount = world.enemyBulletsCount;
+    world.enemyBulletsCount = 0;
+    for (int index = 0; index < initialEnemyBulletsCount; index++)
     {
         if (world.enemyBullets[index].id == -1)
         {
-            for (int lastEntity = world.enemyBulletsCount - 1; lastEntity > index; lastEntity--)
+            for (int lastEntity = initialEnemyBulletsCount - 1; lastEntity > index; lastEntity--)
             {
                 if (world.enemyBullets[lastEntity].id != -1)
                 {
-                    world.enemyBullets[lastEntity].id = index;
                     world.enemyBullets[index] = world.enemyBullets[lastEntity];
+                    world.enemyBullets[index].id = index;
+                    world.enemyBullets[lastEntity].id = -1;
+                    world.enemyBulletsCount++;
                     break;
                 }
             }
-            world.enemyBulletsCount--;
+        }
+        else
+        {
+            world.enemyBulletsCount++;
         }
     }
 }

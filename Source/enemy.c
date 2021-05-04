@@ -21,6 +21,8 @@ int Enemy_Initialize(Path route)
     enemy.route = route;
     enemy.t = 0;
 
+    enemy.Bullet_Pattern = &Pattern_8_Directional;
+
     Path_Duration(&enemy.route);
 
     Vector model[ENEMY_MODEL_COUNT] = {
@@ -79,15 +81,8 @@ void Enemy_Update(Enemy* enemy, float dt)
         }
         if (enemy->fire)
         {
-            Vector velocity;
-            for (int shot = 0; shot < 10; shot++)
-            {
-                float angle = shot / 10.f * 2 * F_PI;
-                velocity.x = cosf(angle) * 100;
-                velocity.y = sinf(angle) * 100;
-
-                Bullet_Create(enemy->position, velocity, 10, 5, team_enemy);
-            }
+            Vector velocity = { 200, 200 };
+            enemy->Bullet_Pattern(enemy->position, velocity, 4);
 
             enemy->fire = false;
             enemy->fireTimer = 0;
@@ -180,4 +175,19 @@ Uint32 Enemy_Reload(Uint32 interval, void* param)
 void Enemy_Destroy(Enemy* enemy)
 {
     enemy->id = -1;
+}
+
+
+
+void Pattern_8_Directional(Vector position, Vector velocity, float size)
+{
+    Vector bulletVelocity;
+    for (int shot = 0; shot < 8; shot++)
+    {
+        float angle = shot / 8.f * 2 * F_PI;
+        bulletVelocity.x = cosf(angle) * velocity.x;
+        bulletVelocity.y = sinf(angle) * velocity.y;
+
+        Bullet_Create(position, bulletVelocity, size, size / 2, team_enemy);
+    }
 }

@@ -33,6 +33,8 @@ typedef struct {
     Vector render[ENEMY_MODEL_COUNT];
 
     bool edit;
+
+    void (*Bullet_Pattern)(Vector position, Vector velocity, float size);
 } Enemy;
 
 int Enemy_Initialize(Path route);
@@ -44,5 +46,8 @@ void Enemy_Set_Route_Render(Enemy* enemy);
 Uint32 Enemy_Reload(Uint32 interval, void* param);
 
 void Enemy_Destroy(Enemy* enemy);
+
+
+void Pattern_8_Directional(Vector position, Vector velocity, float size);
 
 #endif
