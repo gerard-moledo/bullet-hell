@@ -1,5 +1,5 @@
-# bullet-hell
-A bullet hell engine made with C and SDL/SDL_gpu
+# bullet-curtain
+A bullet-heavy, space-shooter engine made with C and SDL/SDL_gpu
 
 ## January 19, 2025
 Finally re-built this project! A short preview of what it does since the last commit (May 4, 2021).
